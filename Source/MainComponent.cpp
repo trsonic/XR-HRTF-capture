@@ -1,77 +1,65 @@
 #include "MainComponent.h"
 
-MainComponent::MainComponent()
+MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 {
 
-    juce::File sweep = juce::File("C:/TR_FILES/SWEEPS/ZZ_sweep.wav");
-    juce::AudioFormatManager afm;
-    afm.registerBasicFormats();
-    std::unique_ptr<juce::AudioFormatReader> reader (afm.createReaderFor(sweep));
-    sweepBuffer.setSize((int)reader->numChannels, (int)reader->lengthInSamples);
-    reader->read(&sweepBuffer, 0, (int)reader->lengthInSamples, 0, true, true);
-    
-    
+    addAndMakeVisible(recordingThumbnail);
+
+    addAndMakeVisible(measureButton);
+    measureButton.onClick = [this]
+    {
+        startRecording();
+    };
+
+    addAndMakeVisible(stopButton);
+    stopButton.onClick = [this]
+    {
+        stopRecording();
+    };
+
+    addAndMakeVisible(setupButton);
+    setupButton.onClick = [this]
+    {
+        addAndMakeVisible(m_audioSetup);
+        m_audioSetup.m_shouldBeVisible = true;
+    };
+
+    audioDeviceManager.initialise(2, 2, nullptr, true, {}, nullptr);
+    audioDeviceManager.addAudioCallback(&recorder);
+
+    File sweep = juce::File("C:/TR_FILES/SWEEPS/ZZ_sweep.wav");
+    recorder.loadSweep(sweep);
     setSize(800, 600);
-    setAudioChannels(2, 2);
 }
 
 MainComponent::~MainComponent()
 {
-    shutdownAudio();
-}
-
-
-void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
-{
-
-}
-
-void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
-{
-    auto numInputChannels = sweepBuffer.getNumChannels();
-    auto numOutputChannels = bufferToFill.buffer->getNumChannels();
-
-    auto outputSamplesRemaining = bufferToFill.numSamples;
-    auto outputSamplesOffset = bufferToFill.startSample;
-
-    while (outputSamplesRemaining > 0)
-    {
-        auto bufferSamplesRemaining = sweepBuffer.getNumSamples() - position;
-        auto samplesThisTime = juce::jmin(outputSamplesRemaining, bufferSamplesRemaining);
-
-        for (auto channel = 0; channel < numOutputChannels; ++channel)
-        {
-            bufferToFill.buffer->copyFrom(channel,
-                outputSamplesOffset,
-                sweepBuffer,
-                channel % numInputChannels,
-                position,
-                samplesThisTime);
-
-            //bufferToFill.buffer->applyGainRamp(channel, outputSamplesOffset, samplesThisTime, startLevel, level);
-        }
-
-        outputSamplesRemaining -= samplesThisTime;
-        outputSamplesOffset += samplesThisTime;
-        position += samplesThisTime;
-
-        if (position == sweepBuffer.getNumSamples())
-            position = 0;
-    }
-}
-
-void MainComponent::releaseResources()
-{
-
+    audioDeviceManager.removeAudioCallback(&recorder);
 }
 
 void MainComponent::paint (juce::Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
 }
 
 void MainComponent::resized()
 {
+    auto area = getLocalBounds();
 
+    recordingThumbnail.setBounds(area.removeFromTop(80).reduced(8));
+    measureButton.setBounds(area.removeFromTop(36).removeFromLeft(140).reduced(8));
+    stopButton.setBounds(area.removeFromTop(36).removeFromLeft(140).reduced(8));
+    setupButton.setBounds(area.removeFromTop(36).removeFromLeft(140).reduced(8));
+}
+
+void MainComponent::startRecording()
+{
+    lastRecording = File("C:/TR_FILES/SWEEPS/LR_temp_sweep.wav");
+    recorder.startRecording(lastRecording);
+}
+
+void MainComponent::stopRecording()
+{
+    recorder.stop();
+    lastRecording = juce::File();
 }
