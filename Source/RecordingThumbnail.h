@@ -18,9 +18,9 @@ public:
 
     juce::AudioThumbnail& getAudioThumbnail() { return thumbnail; }
 
-    void setDisplayFullThumbnail(bool displayFull)
+    void setThumbnailLength(float end)
     {
-        displayFullThumb = displayFull;
+        endTime = end;
         repaint();
     }
 
@@ -34,7 +34,7 @@ public:
             //auto endTime = displayFullThumb ? thumbnail.getTotalLength()
             //    : juce::jmax(30.0, thumbnail.getTotalLength());
 
-            auto endTime = 6.0;
+
             auto thumbArea = getLocalBounds();
             thumbnail.drawChannels(g, thumbArea.reduced(2), 0.0, endTime, 1.0f);
         }
@@ -50,7 +50,7 @@ private:
     juce::AudioThumbnailCache thumbnailCache{ 10 };
     juce::AudioThumbnail thumbnail{ 512, formatManager, thumbnailCache };
 
-    bool displayFullThumb = true;
+    float endTime = 0.0;
 
     void changeListenerCallback(juce::ChangeBroadcaster* source) override
     {

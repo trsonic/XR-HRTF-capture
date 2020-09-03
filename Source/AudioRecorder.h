@@ -1,7 +1,9 @@
 #pragma once
 #include <JuceHeader.h>
+#include "RecordingThumbnail.h"
 
 class AudioRecorder : public juce::AudioIODeviceCallback
+                    , public ChangeBroadcaster
 {
 public:
     AudioRecorder(juce::AudioThumbnail& thumbnailToUpdate)
@@ -15,13 +17,28 @@ public:
         stop();
     }
 
-    void loadSweep(const juce::File& file)
+    bool loadSweep(const juce::File& file)
     {
-        juce::AudioFormatManager afm;
-        afm.registerBasicFormats();
-        std::unique_ptr<juce::AudioFormatReader> reader(afm.createReaderFor(file));
-        sweepBuffer.setSize((int)reader->numChannels, (int)reader->lengthInSamples);
-        reader->read(&sweepBuffer, 0, (int)reader->lengthInSamples, 0, true, true);
+        if (file.existsAsFile())
+        {
+            juce::AudioFormatManager afm;
+            afm.registerBasicFormats();
+            std::unique_ptr<juce::AudioFormatReader> reader(afm.createReaderFor(file));
+            sweepBuffer.setSize((int)reader->numChannels, (int)reader->lengthInSamples);
+            reader->read(&sweepBuffer, 0, (int)reader->lengthInSamples, 0, true, true);
+            sweepLength = (float)((int)reader->lengthInSamples / (int)reader->sampleRate);
+        }
+        else
+        {
+            sweepLength = 0.0;
+            return false;
+        }
+
+    }
+
+    float getSweepLength()
+    {
+        return sweepLength;
     }
 
     void startRecording(const juce::File& file)
@@ -50,6 +67,8 @@ public:
                     // And now, swap over our active writer pointer so that the audio callback will start using it..
                     const juce::ScopedLock sl(writerLock);
                     activeWriter = threadedWriter.get();
+
+                    sendChangeMessage();
                 }
             }
         }
@@ -59,7 +78,9 @@ public:
     {
         const juce::ScopedLock sl(writerLock);
         activeWriter = nullptr;
+        sweepPosition = 0;
         threadedWriter.reset();
+        sendChangeMessage();
     }
 
     bool isRecording() const
@@ -84,13 +105,7 @@ public:
 
         if (activeWriter.load() != nullptr && numInputChannels >= thumbnail.getNumChannels())
         {
-            activeWriter.load()->write(inputChannelData, numSamples);
-
-            // Create an AudioBuffer to wrap our incoming data, note that this does no allocations or copies, it simply references our input data
-            juce::AudioBuffer<float> buffer(const_cast<float**> (inputChannelData), thumbnail.getNumChannels(), numSamples);
-            thumbnail.addBlock(nextSampleNum, buffer, 0, numSamples);
-            nextSampleNum += numSamples;
-
+            // output
             int sweepLength = sweepBuffer.getNumSamples();
             if (sweepPosition + numSamples <= sweepLength)
             {
@@ -103,11 +118,15 @@ public:
             }
             else
             {
-                sweepPosition = 0;
                 stop();
+                return;
             }
 
-
+            // input
+            activeWriter.load()->write(inputChannelData, numSamples);
+            juce::AudioBuffer<float> buffer(const_cast<float**> (inputChannelData), thumbnail.getNumChannels(), numSamples);
+            thumbnail.addBlock(nextSampleNum, buffer, 0, numSamples);
+            nextSampleNum += numSamples;
         }
         else
         {
@@ -129,6 +148,7 @@ private:
     juce::int64 nextSampleNum = 0;
 
     juce::AudioSampleBuffer sweepBuffer;
+    float sweepLength = 0.0;
     int sweepPosition = 0;
 
     juce::CriticalSection writerLock;
