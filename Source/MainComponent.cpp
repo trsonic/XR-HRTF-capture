@@ -44,6 +44,8 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 	connectOscButton.addListener(this);
 	addAndMakeVisible(&connectOscButton);
 
+	addAndMakeVisible(m_logic);
+
     audioDeviceManager.initialise(2, 2, nullptr, true, {}, nullptr);
     audioDeviceManager.addAudioCallback(&recorder);
 
@@ -58,7 +60,7 @@ MainComponent::~MainComponent()
 {
     audioDeviceManager.removeAudioCallback(&recorder);
 	saveSettings();
-	oscTxRx.disconnectTxRx();
+	m_oscTxRx.disconnectTxRx();
 }
 
 void MainComponent::paint (juce::Graphics& g)
@@ -90,6 +92,8 @@ void MainComponent::resized()
 	clientTxIpLabel.setBounds(310 + 140, 235 - 75, 120, 25);
 	clientTxPortLabel.setBounds(435 + 140, 235 - 75, 55, 25);
 	clientRxPortLabel.setBounds(495 + 140, 235 - 75, 55, 25);
+
+	m_logic.setBounds(10, 205, 780, 380);
 }
 
 void MainComponent::buttonClicked(Button* buttonThatWasClicked)
@@ -111,20 +115,20 @@ void MainComponent::buttonClicked(Button* buttonThatWasClicked)
 	}
 	else if (buttonThatWasClicked == &connectOscButton)
 	{
-		if (!oscTxRx.isConnected())
+		if (!m_oscTxRx.isConnected())
 		{
 			// OSC sender and receiver connect
 			String clientIp = clientTxIpLabel.getText();
 			int clientSendToPort = clientTxPortLabel.getText().getIntValue();
 			int clientReceiveAtPort = clientRxPortLabel.getText().getIntValue();
-			oscTxRx.connectTxRx(clientIp, clientSendToPort, clientReceiveAtPort);
+			m_oscTxRx.connectTxRx(clientIp, clientSendToPort, clientReceiveAtPort);
 		}
 		else
 		{
-			oscTxRx.disconnectTxRx();
+			m_oscTxRx.disconnectTxRx();
 		}
 
-		if (oscTxRx.isConnected())
+		if (m_oscTxRx.isConnected())
 		{
 			connectOscButton.setColour(TextButton::buttonColourId, Colours::green);
 			connectOscButton.setButtonText("OSC connected");
@@ -201,9 +205,9 @@ void MainComponent::loadSettings()
 		sweepFile = File(appSettings.getUserSettings()->getValue("sweepFile"));
 
 		// osc
-		//clientTxIpLabel.setText(appSettings.getUserSettings()->getValue("clientTxIp"), dontSendNotification);
-		//clientTxPortLabel.setText(appSettings.getUserSettings()->getValue("clientTxPort"), dontSendNotification);
-		//clientRxPortLabel.setText(appSettings.getUserSettings()->getValue("clientRxPort"), dontSendNotification);
+		clientTxIpLabel.setText(appSettings.getUserSettings()->getValue("clientTxIp"), dontSendNotification);
+		clientTxPortLabel.setText(appSettings.getUserSettings()->getValue("clientTxPort"), dontSendNotification);
+		clientRxPortLabel.setText(appSettings.getUserSettings()->getValue("clientRxPort"), dontSendNotification);
 	}
 }
 
@@ -222,9 +226,9 @@ void MainComponent::saveSettings()
 	appSettings.getUserSettings()->setValue("sweepFile", sweepFile.getFullPathName());
 
 	// osc
-	//appSettings.getUserSettings()->setValue("clientTxIp", clientTxIpLabel.getText());
-	//appSettings.getUserSettings()->setValue("clientTxPort", clientTxPortLabel.getText());
-	//appSettings.getUserSettings()->setValue("clientRxPort", clientRxPortLabel.getText());
+	appSettings.getUserSettings()->setValue("clientTxIp", clientTxIpLabel.getText());
+	appSettings.getUserSettings()->setValue("clientTxPort", clientTxPortLabel.getText());
+	appSettings.getUserSettings()->setValue("clientRxPort", clientRxPortLabel.getText());
 
 	appSettings.getUserSettings()->setValue("loadSettingsFile", true);
 }

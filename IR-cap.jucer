@@ -4,19 +4,23 @@
               displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="gjxHQA" name="IR-cap">
     <GROUP id="{E90D7BB1-1849-CF8E-EA28-70B9C369C594}" name="Source">
-      <FILE id="oSjydi" name="OscTransceiver.cpp" compile="1" resource="0"
-            file="Source/OscTransceiver.cpp"/>
-      <FILE id="joTlub" name="OscTransceiver.h" compile="0" resource="0"
-            file="Source/OscTransceiver.h"/>
       <FILE id="fKpBcb" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="pkQ4Sl" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="L31Dul" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
+      <FILE id="j1Xb2B" name="MeasurementLogic.h" compile="0" resource="0"
+            file="Source/MeasurementLogic.h"/>
+      <FILE id="ahuQQc" name="MeasurementLogic.cpp" compile="1" resource="0"
+            file="Source/MeasurementLogic.cpp"/>
+      <FILE id="EzS2Bd" name="AudioSetup.h" compile="0" resource="0" file="Source/AudioSetup.h"/>
+      <FILE id="vIOr07" name="AudioSetup.cpp" compile="1" resource="0" file="Source/AudioSetup.cpp"/>
+      <FILE id="joTlub" name="OscTransceiver.h" compile="0" resource="0"
+            file="Source/OscTransceiver.h"/>
+      <FILE id="oSjydi" name="OscTransceiver.cpp" compile="1" resource="0"
+            file="Source/OscTransceiver.cpp"/>
       <FILE id="mra7cP" name="AudioRecorder.h" compile="0" resource="0" file="Source/AudioRecorder.h"/>
       <FILE id="Vmyl5i" name="RecordingThumbnail.h" compile="0" resource="0"
             file="Source/RecordingThumbnail.h"/>
-      <FILE id="EzS2Bd" name="AudioSetup.h" compile="0" resource="0" file="Source/AudioSetup.h"/>
-      <FILE id="vIOr07" name="AudioSetup.cpp" compile="1" resource="0" file="Source/AudioSetup.cpp"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_ASIO="1"/>

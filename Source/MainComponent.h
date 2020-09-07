@@ -4,10 +4,12 @@
 #include "AudioRecorder.h"
 #include "AudioSetup.h"
 #include "OscTransceiver.h"
+#include "MeasurementLogic.h"
 
 class MainComponent     : public Component
                         , public Button::Listener
                         , private ChangeListener
+
 {
 public:
     
@@ -28,7 +30,8 @@ private:
     RecordingThumbnail recordingThumbnail;
     AudioRecorder recorder{ recordingThumbnail.getAudioThumbnail() };
     AudioSetup m_audioSetup;
-    OscTransceiver oscTxRx;
+    OscTransceiver m_oscTxRx;
+    MeasurementLogic m_logic;
 
     TextButton loadSweepButton{"Load Sweep"}, measureButton{ "Measure" }, stopButton{ "Stop" }, setupButton{ "Audio Setup" };
     TextButton connectOscButton;
