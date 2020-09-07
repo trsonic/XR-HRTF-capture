@@ -31,10 +31,6 @@ public:
 
         if (thumbnail.getTotalLength() > 0.0)
         {
-            //auto endTime = displayFullThumb ? thumbnail.getTotalLength()
-            //    : juce::jmax(30.0, thumbnail.getTotalLength());
-
-
             auto thumbArea = getLocalBounds();
             thumbnail.drawChannels(g, thumbArea.reduced(2), 0.0, endTime, 1.0f);
         }

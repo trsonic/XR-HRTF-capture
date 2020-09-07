@@ -3,8 +3,10 @@
 #include "RecordingThumbnail.h"
 #include "AudioRecorder.h"
 #include "AudioSetup.h"
+#include "OscTransceiver.h"
 
 class MainComponent     : public Component
+                        , public Button::Listener
                         , private ChangeListener
 {
 public:
@@ -14,6 +16,7 @@ public:
 
     void paint (juce::Graphics& g) override;
     void resized() override;
+    void buttonClicked(Button* buttonThatWasClicked) override;
     void changeListenerCallback(ChangeBroadcaster* source) override;
 
 private:
@@ -25,8 +28,11 @@ private:
     RecordingThumbnail recordingThumbnail;
     AudioRecorder recorder{ recordingThumbnail.getAudioThumbnail() };
     AudioSetup m_audioSetup;
+    OscTransceiver oscTxRx;
 
     TextButton loadSweepButton{"Load Sweep"}, measureButton{ "Measure" }, stopButton{ "Stop" }, setupButton{ "Audio Setup" };
+    TextButton connectOscButton;
+    Label clientTxIpLabel, clientTxPortLabel, clientRxPortLabel;
     File sweepFile, lastRecording;
 
     // app settings

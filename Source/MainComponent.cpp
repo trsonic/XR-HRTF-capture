@@ -3,16 +3,7 @@
 MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 {
 	addAndMakeVisible(loadSweepButton);
-	loadSweepButton.onClick = [this]
-	{
-		FileChooser fc("Select the sweep wav file...", sweepFile.getParentDirectory());
-
-		if (fc.browseForFileToOpen())
-		{
-			sweepFile = fc.getResult();
-			loadSweep(sweepFile);
-		}
-	};
+	loadSweepButton.addListener(this);
 
     addAndMakeVisible(measureButton);
     measureButton.onClick = [this]
@@ -28,13 +19,30 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
     };
 
     addAndMakeVisible(setupButton);
-    setupButton.onClick = [this]
-    {
-        addAndMakeVisible(m_audioSetup);
-        m_audioSetup.m_shouldBeVisible = true;
-    };
+    setupButton.addListener(this);
 
 	addAndMakeVisible(recordingThumbnail);
+
+	// OSC labels
+	clientTxIpLabel.setEditable(false, true, false);
+	clientTxPortLabel.setEditable(false, true, false);
+	clientRxPortLabel.setEditable(false, true, false);
+	clientTxIpLabel.setText("127.0.0.1", dontSendNotification);
+	clientTxPortLabel.setText("6000", dontSendNotification);
+	clientRxPortLabel.setText("9000", dontSendNotification);
+	clientTxIpLabel.setColour(Label::outlineColourId, Colours::black);
+	clientTxPortLabel.setColour(Label::outlineColourId, Colours::black);
+	clientRxPortLabel.setColour(Label::outlineColourId, Colours::black);
+	clientTxIpLabel.setJustificationType(Justification::centred);
+	clientTxPortLabel.setJustificationType(Justification::centred);
+	clientRxPortLabel.setJustificationType(Justification::centred);
+	addAndMakeVisible(clientTxIpLabel);
+	addAndMakeVisible(clientTxPortLabel);
+	addAndMakeVisible(clientRxPortLabel);
+
+	connectOscButton.setButtonText("Connect OSC");
+	connectOscButton.addListener(this);
+	addAndMakeVisible(&connectOscButton);
 
     audioDeviceManager.initialise(2, 2, nullptr, true, {}, nullptr);
     audioDeviceManager.addAudioCallback(&recorder);
@@ -42,7 +50,7 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
     setSize(800, 600);
     loadSettings();
 	loadSweep(sweepFile);
-
+	connectOscButton.triggerClick(); // connect OSC on startup
 	recorder.addChangeListener(this);
 }
 
@@ -50,12 +58,24 @@ MainComponent::~MainComponent()
 {
     audioDeviceManager.removeAudioCallback(&recorder);
 	saveSettings();
+	oscTxRx.disconnectTxRx();
 }
 
 void MainComponent::paint (juce::Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 	g.drawText(sweepFile.getFullPathName(), 160, 10, 630, 25, Justification::centredLeft);
+
+	// OSC WINDOW
+	juce::Rectangle<int> oscRect(250 + 140, 210 - 75, 400, 60);        // osc status / vr interface status
+	g.setColour(Colours::black);
+	g.drawRect(oscRect, 1);
+	g.setColour(getLookAndFeel().findColour(Label::textColourId));
+	g.setFont(14.0f);
+	g.drawText("IP", 310 + 140, 210 - 75, 50, 25, Justification::centredLeft, true);
+	g.drawText("Send to", 435 + 140, 210 - 75, 60, 25, Justification::centredLeft, true);
+	g.drawText("Receive at", 490 + 140, 210 - 75, 60, 25, Justification::centredLeft, true);
+	g.drawText("Client", 260 + 140, 235 - 75, 50, 25, Justification::centredLeft, true);
 }
 
 void MainComponent::resized()
@@ -65,25 +85,58 @@ void MainComponent::resized()
     stopButton.setBounds(10, 70, 140, 25);
     setupButton.setBounds(10, 100, 140, 25);
 	recordingThumbnail.setBounds(160, 40, 630, 85);
+
+	connectOscButton.setBounds(560 + 140, 220 - 75, 80, 40);
+	clientTxIpLabel.setBounds(310 + 140, 235 - 75, 120, 25);
+	clientTxPortLabel.setBounds(435 + 140, 235 - 75, 55, 25);
+	clientRxPortLabel.setBounds(495 + 140, 235 - 75, 55, 25);
 }
 
-void MainComponent::loadSweep(File file)
+void MainComponent::buttonClicked(Button* buttonThatWasClicked)
 {
-	recorder.loadSweep(file);
-	recordingThumbnail.setThumbnailLength(recorder.getSweepLength());
+	if (buttonThatWasClicked == &loadSweepButton)
+	{
+		FileChooser fc("Select the sweep wav file...", sweepFile.getParentDirectory());
+
+		if (fc.browseForFileToOpen())
+		{
+			sweepFile = fc.getResult();
+			loadSweep(sweepFile);
+		}
+	}
+	else if (buttonThatWasClicked == &setupButton)
+	{
+		addAndMakeVisible(m_audioSetup);
+		m_audioSetup.m_shouldBeVisible = true;
+	}
+	else if (buttonThatWasClicked == &connectOscButton)
+	{
+		if (!oscTxRx.isConnected())
+		{
+			// OSC sender and receiver connect
+			String clientIp = clientTxIpLabel.getText();
+			int clientSendToPort = clientTxPortLabel.getText().getIntValue();
+			int clientReceiveAtPort = clientRxPortLabel.getText().getIntValue();
+			oscTxRx.connectTxRx(clientIp, clientSendToPort, clientReceiveAtPort);
+		}
+		else
+		{
+			oscTxRx.disconnectTxRx();
+		}
+
+		if (oscTxRx.isConnected())
+		{
+			connectOscButton.setColour(TextButton::buttonColourId, Colours::green);
+			connectOscButton.setButtonText("OSC connected");
+		}
+		else
+		{
+			connectOscButton.setColour(TextButton::buttonColourId, Component::findColour(TextButton::buttonColourId));
+			connectOscButton.setButtonText("Connect OSC");
+		}
+	}
+
 	repaint();
-}
-
-void MainComponent::startRecording()
-{
-    lastRecording = File("C:/TR_FILES/local_repositories/XR-HRTF-processing/sweeps/LR_temp_sweep.wav");
-    recorder.startRecording(lastRecording);
-}
-
-void MainComponent::stopRecording()
-{
-    recorder.stop();
-    lastRecording = juce::File();
 }
 
 void MainComponent::changeListenerCallback(ChangeBroadcaster* source)
@@ -101,6 +154,25 @@ void MainComponent::changeListenerCallback(ChangeBroadcaster* source)
 			stopButton.setEnabled(false);
 		}
 	}
+}
+
+void MainComponent::loadSweep(File file)
+{
+	recorder.loadSweep(file);
+	recordingThumbnail.setThumbnailLength(recorder.getSweepLength());
+	repaint();
+}
+
+void MainComponent::startRecording()
+{
+	lastRecording = sweepFile.getParentDirectory().getChildFile("LR_temp_sweep.wav");
+    recorder.startRecording(lastRecording);
+}
+
+void MainComponent::stopRecording()
+{
+    recorder.stop();
+    lastRecording = juce::File();
 }
 
 void MainComponent::loadSettings()
