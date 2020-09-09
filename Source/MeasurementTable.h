@@ -28,8 +28,7 @@ public:
         }
 
         table.getHeader().setSortColumnId(1, true);                                // [3]
-
-        table.setMultipleSelectionEnabled(true);                                   // [4]
+        table.setMultipleSelectionEnabled(false);                                   // [4]
     }
 
     int getNumRows() override
@@ -78,17 +77,6 @@ public:
     Component* refreshComponentForCell(int rowNumber, int columnId, bool /*isRowSelected*/,
         Component* existingComponentToUpdate) override
     {
-        if (columnId == 9)  // [8]
-        {
-            auto* selectionBox = static_cast<SelectionColumnCustomComponent*> (existingComponentToUpdate);
-
-            if (selectionBox == nullptr)
-                selectionBox = new SelectionColumnCustomComponent(*this);
-
-            selectionBox->setRowAndColumn(rowNumber, columnId);
-            return selectionBox;
-        }
-
         if (columnId == 8)  // [9]
         {
             auto* textLabel = static_cast<EditableTextCustomComponent*> (existingComponentToUpdate);
@@ -98,6 +86,17 @@ public:
 
             textLabel->setRowAndColumn(rowNumber, columnId);
             return textLabel;
+        }
+
+        if (columnId == 9)  // [8]
+        {
+            auto* selectionBox = static_cast<SelectionColumnCustomComponent*> (existingComponentToUpdate);
+
+            if (selectionBox == nullptr)
+                selectionBox = new SelectionColumnCustomComponent(*this);
+
+            selectionBox->setRowAndColumn(rowNumber, columnId);
+            return selectionBox;
         }
 
         jassert(existingComponentToUpdate == nullptr);

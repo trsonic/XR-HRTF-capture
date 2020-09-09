@@ -4,9 +4,18 @@ MeasurementLogic::MeasurementLogic()
 {
 	startTimerHz(60);
 
-	loadConfig();
+	addAndMakeVisible(m_nextMeasurement);
+	m_nextMeasurement.onClick = [this]
+	{
+		m_currentMeasurement++;
+		repaint();
+	};
 
 	addAndMakeVisible(m_table);
+	if (m_table.getNumRows() > 0)
+	{
+		m_currentMeasurement = 1;
+	}
 
 	m_lastMessage.setColour(Label::outlineColourId, Colours::black);
 	m_lastMessage.setMultiLine(true, false);
@@ -35,13 +44,18 @@ void MeasurementLogic::paint(juce::Graphics& g)
 
 	g.setColour(Colours::black);
 	g.drawRect(getLocalBounds(), 1);
+
+	g.drawText(String(m_currentMeasurement), 10, 30, 120, 25, Justification::centredLeft);
+	g.drawText(m_table.getText(1, m_currentMeasurement), 10, 60, 120, 25, Justification::centredLeft);
+
 }
 
 void MeasurementLogic::resized()
 {
-	m_table.setBounds(5, 5, 480, 370);
-	m_logHeaderTE.setBounds(340+150, 10, 85, 285);
-	m_lastMessage.setBounds(425+150, 10, 195, 285);
+	m_nextMeasurement.setBounds(5, 5, 60, 25);
+	m_table.setBounds(5, 120, 480, 250);
+	m_logHeaderTE.setBounds(340+150, 120, 85, 250);
+	m_lastMessage.setBounds(425+150, 120, 195, 250);
 }
 
 void MeasurementLogic::oscMessageReceived(const OSCMessage& message)
@@ -105,50 +119,7 @@ void MeasurementLogic::timerCallback()
 	}
 }
 
-void MeasurementLogic::loadConfig()
+void MeasurementLogic::readTableData()
 {
-	//auto dir = juce::File::getCurrentWorkingDirectory();
-
-	//int numTries = 0;
-
-	//while (!dir.getChildFile("Resources").exists() && numTries++ < 15)
-	//	dir = dir.getParentDirectory();
-
-	//auto tableFile = dir.getChildFile("Resources").getChildFile("target_angles.csv");
-
-	//if (tableFile.exists())
-	//{
-	//	StringArray loadedData;
-	//	loadedData.clear();
-	//	loadedData.addLines(tableFile.loadFileAsString());
-	//	if (loadedData[0].startsWith("measId,targetAz,targetEl,angDev,targetDist,distDev"))
-	//	{
-	//		m_hrtfList.clear(true);
-	//		for (int i = 1; i < loadedData.size(); i++)
-	//		{
-	//			StringArray tokens;
-	//			m_hrtfList.add(new HrtfMeasurement);
-	//			tokens.addTokens(loadedData[i], ",", "\"");
-
-	//			m_hrtfList.getLast()->setTarget(
-	//				tokens[0].getIntValue()
-	//				, tokens[1].getFloatValue()
-	//				, tokens[2].getFloatValue()
-	//				, tokens[3].getFloatValue()
-	//				, tokens[4].getFloatValue()
-	//				, tokens[5].getFloatValue()
-	//			);
-	//		}
-
-	//	}
-	//	else
-	//	{
-	//		AlertWindow::showMessageBoxAsync(AlertWindow::InfoIcon, "Invalid config file:\n", tableFile.getFullPathName());
-	//	}
-	//}
-}
-
-void MeasurementLogic::updateTable()
-{
-
+	//m_table.getText(2, 1);
 }
