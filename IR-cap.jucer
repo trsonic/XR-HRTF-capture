@@ -4,6 +4,8 @@
               displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="gjxHQA" name="IR-cap">
     <GROUP id="{E90D7BB1-1849-CF8E-EA28-70B9C369C594}" name="Source">
+      <FILE id="fVCSkk" name="MeasurementTable.h" compile="0" resource="0"
+            file="Source/MeasurementTable.h"/>
       <FILE id="fKpBcb" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="pkQ4Sl" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="L31Dul" name="MainComponent.cpp" compile="1" resource="0"

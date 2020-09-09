@@ -4,6 +4,10 @@ MeasurementLogic::MeasurementLogic()
 {
 	startTimerHz(60);
 
+	loadConfig();
+
+	addAndMakeVisible(m_table);
+
 	m_lastMessage.setColour(Label::outlineColourId, Colours::black);
 	m_lastMessage.setMultiLine(true, false);
 	m_lastMessage.setReadOnly(true);
@@ -35,8 +39,9 @@ void MeasurementLogic::paint(juce::Graphics& g)
 
 void MeasurementLogic::resized()
 {
-	m_logHeaderTE.setBounds(340+140, 10, 85, 285);
-	m_lastMessage.setBounds(425+140, 10, 195, 285);
+	m_table.setBounds(5, 5, 480, 370);
+	m_logHeaderTE.setBounds(340+150, 10, 85, 285);
+	m_lastMessage.setBounds(425+150, 10, 195, 285);
 }
 
 void MeasurementLogic::oscMessageReceived(const OSCMessage& message)
@@ -98,4 +103,52 @@ void MeasurementLogic::timerCallback()
 		//m_saveLogButton.setEnabled(false);
 		m_lastMessage.setText("", dontSendNotification);
 	}
+}
+
+void MeasurementLogic::loadConfig()
+{
+	//auto dir = juce::File::getCurrentWorkingDirectory();
+
+	//int numTries = 0;
+
+	//while (!dir.getChildFile("Resources").exists() && numTries++ < 15)
+	//	dir = dir.getParentDirectory();
+
+	//auto tableFile = dir.getChildFile("Resources").getChildFile("target_angles.csv");
+
+	//if (tableFile.exists())
+	//{
+	//	StringArray loadedData;
+	//	loadedData.clear();
+	//	loadedData.addLines(tableFile.loadFileAsString());
+	//	if (loadedData[0].startsWith("measId,targetAz,targetEl,angDev,targetDist,distDev"))
+	//	{
+	//		m_hrtfList.clear(true);
+	//		for (int i = 1; i < loadedData.size(); i++)
+	//		{
+	//			StringArray tokens;
+	//			m_hrtfList.add(new HrtfMeasurement);
+	//			tokens.addTokens(loadedData[i], ",", "\"");
+
+	//			m_hrtfList.getLast()->setTarget(
+	//				tokens[0].getIntValue()
+	//				, tokens[1].getFloatValue()
+	//				, tokens[2].getFloatValue()
+	//				, tokens[3].getFloatValue()
+	//				, tokens[4].getFloatValue()
+	//				, tokens[5].getFloatValue()
+	//			);
+	//		}
+
+	//	}
+	//	else
+	//	{
+	//		AlertWindow::showMessageBoxAsync(AlertWindow::InfoIcon, "Invalid config file:\n", tableFile.getFullPathName());
+	//	}
+	//}
+}
+
+void MeasurementLogic::updateTable()
+{
+
 }
