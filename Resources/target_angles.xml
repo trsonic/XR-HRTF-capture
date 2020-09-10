@@ -1,11 +1,11 @@
 <TABLE_DATA>
     <HEADERS>
         <COLUMN columnId="1" name="ID" width="50"/>
-        <COLUMN columnId="2" name="targetAz" width="50"/>
-        <COLUMN columnId="3" name="targetEl" width="50"/>
-        <COLUMN columnId="4" name="angDev" width="50"/>
-        <COLUMN columnId="5" name="targetDist" width="50"/>
-        <COLUMN columnId="6" name="distDev" width="50"/>
+        <COLUMN columnId="2" name="targetAz" width="80"/>
+        <COLUMN columnId="3" name="targetEl" width="80"/>
+        <COLUMN columnId="4" name="angDev" width="80"/>
+        <COLUMN columnId="5" name="targetDist" width="80"/>
+        <COLUMN columnId="6" name="distDev" width="80"/>
     </HEADERS>
     <DATA>
         <ITEM ID="1" targetAz="0.00" targetEl="90.00" angDev="5.00" targetDist="1.20" distDev="0.10"/>

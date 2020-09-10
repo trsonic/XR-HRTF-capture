@@ -45,9 +45,9 @@ void MeasurementLogic::paint(juce::Graphics& g)
 	g.setColour(Colours::black);
 	g.drawRect(getLocalBounds(), 1);
 
-	g.drawText(String(m_currentMeasurement), 10, 30, 120, 25, Justification::centredLeft);
-	g.drawText(m_table.getText(1, m_currentMeasurement), 10, 60, 120, 25, Justification::centredLeft);
-
+	g.drawText("Current ID: " + String(m_currentMeasurement), 10, 30, 200, 25, Justification::centredLeft);
+	g.drawText("Target azimuth: " + m_table.getFromXML(m_currentMeasurement,"targetAz"), 10, 60, 200, 25, Justification::centredLeft);
+	g.drawText("Target elevation: " + m_table.getFromXML(m_currentMeasurement, "targetEl"), 10, 90, 200, 25, Justification::centredLeft);
 }
 
 void MeasurementLogic::resized()

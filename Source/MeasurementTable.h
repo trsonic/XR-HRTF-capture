@@ -150,6 +150,19 @@ public:
         table.setBoundsInset(juce::BorderSize<int>(8));
     }
 
+    String getFromXML(int id, String column)
+    {
+        if (id <= dataList->getNumChildElements())
+        {
+            int colId = columnList->getChildByAttribute("name", column)->getAttributeValue(0).getIntValue();
+            return dataList->getChildByAttribute("ID", String(id))->getAttributeValue(colId - 1);
+        }
+        else
+        {
+            return "";
+        }
+    }
+
 private:
     juce::TableListBox table{ {}, this };
     juce::Font font{ 14.0f };
