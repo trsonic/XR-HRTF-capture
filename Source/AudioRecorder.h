@@ -1,13 +1,15 @@
 #pragma once
 #include <JuceHeader.h>
 #include "RecordingThumbnail.h"
+#include "AudioAnalyzer.h"
 
 class AudioRecorder : public juce::AudioIODeviceCallback
                     , public ChangeBroadcaster
 {
 public:
-    AudioRecorder(juce::AudioThumbnail& thumbnailToUpdate)
+    AudioRecorder(juce::AudioThumbnail& thumbnailToUpdate, AudioAnalyzer& anal)
         : thumbnail(thumbnailToUpdate)
+        , analyzer(anal)
     {
         backgroundThread.startThread();
     }
@@ -91,6 +93,7 @@ public:
     void audioDeviceAboutToStart(juce::AudioIODevice* device) override
     {
         sampleRate = device->getCurrentSampleRate();
+        analyzer.init(device->getCurrentBufferSizeSamples(), sampleRate);
     }
 
     void audioDeviceStopped() override
@@ -137,11 +140,14 @@ public:
             }
         }
 
+        juce::AudioBuffer<float> buffer(const_cast<float**> (inputChannelData), 2, numSamples);
+        analyzer.getNextAudioBlock(AudioSourceChannelInfo(&buffer, 0, numSamples));
 
     }
 
 private:
     juce::AudioThumbnail& thumbnail;
+    AudioAnalyzer& analyzer;
     juce::TimeSliceThread backgroundThread{ "Audio Recorder Thread" }; // the thread that will write our audio data to disk
     std::unique_ptr<juce::AudioFormatWriter::ThreadedWriter> threadedWriter; // the FIFO used to buffer the incoming data
     double sampleRate = 0.0;

@@ -4,6 +4,7 @@
               displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="gjxHQA" name="IR-cap">
     <GROUP id="{E90D7BB1-1849-CF8E-EA28-70B9C369C594}" name="Source">
+      <FILE id="C7RH5u" name="AudioAnalyzer.h" compile="0" resource="0" file="Source/AudioAnalyzer.h"/>
       <FILE id="fVCSkk" name="MeasurementTable.h" compile="0" resource="0"
             file="Source/MeasurementTable.h"/>
       <FILE id="fKpBcb" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
@@ -45,6 +46,7 @@
         <MODULEPATH id="juce_gui_basics" path="../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../JUCE/modules"/>
         <MODULEPATH id="juce_osc" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2019>
   </EXPORTFORMATS>
@@ -56,6 +58,7 @@
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>

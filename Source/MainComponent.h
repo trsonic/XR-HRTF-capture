@@ -3,6 +3,7 @@
 #include "RecordingThumbnail.h"
 #include "AudioRecorder.h"
 #include "AudioSetup.h"
+#include "AudioAnalyzer.h"
 #include "OscTransceiver.h"
 #include "MeasurementLogic.h"
 
@@ -28,7 +29,8 @@ private:
 
     AudioDeviceManager audioDeviceManager;
     RecordingThumbnail recordingThumbnail;
-    AudioRecorder recorder{ recordingThumbnail.getAudioThumbnail() };
+    AudioAnalyzer m_analyzer;
+    AudioRecorder recorder{ recordingThumbnail.getAudioThumbnail(), m_analyzer };
     AudioSetup m_audioSetup;
     OscTransceiver m_oscTxRx;
     MeasurementLogic m_logic;

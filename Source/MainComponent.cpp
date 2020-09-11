@@ -23,6 +23,8 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 
 	addAndMakeVisible(recordingThumbnail);
 
+	addAndMakeVisible(m_analyzer);
+
 	// OSC labels
 	clientTxIpLabel.setEditable(false, true, false);
 	clientTxPortLabel.setEditable(false, true, false);
@@ -87,6 +89,7 @@ void MainComponent::resized()
     stopButton.setBounds(10, 70, 140, 25);
     setupButton.setBounds(10, 100, 140, 25);
 	recordingThumbnail.setBounds(160, 40, 630, 85);
+	m_analyzer.setBounds(10, 135, 370, 60);
 
 	connectOscButton.setBounds(560 + 140, 220 - 75, 80, 40);
 	clientTxIpLabel.setBounds(310 + 140, 235 - 75, 120, 25);
