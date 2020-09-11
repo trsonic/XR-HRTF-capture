@@ -8,6 +8,7 @@ MeasurementLogic::MeasurementLogic()
 	m_nextMeasurement.onClick = [this]
 	{
 		m_currentMeasurement++;
+		m_table.selectMeasurementRow(m_currentMeasurement);
 		repaint();
 	};
 
@@ -45,14 +46,15 @@ void MeasurementLogic::paint(juce::Graphics& g)
 	g.setColour(Colours::black);
 	g.drawRect(getLocalBounds(), 1);
 
-	g.drawText("Current ID: " + String(m_currentMeasurement), 10, 30, 200, 25, Justification::centredLeft);
-	g.drawText("Target azimuth: " + m_table.getFromXML(m_currentMeasurement,"targetAz"), 10, 60, 200, 25, Justification::centredLeft);
-	g.drawText("Target elevation: " + m_table.getFromXML(m_currentMeasurement, "targetEl"), 10, 90, 200, 25, Justification::centredLeft);
+	g.drawText("Current ID: " + String(m_currentMeasurement), 10, 10, 200, 15, Justification::centredLeft);
+	g.drawText("Target azimuth: " + m_table.getFromXML(m_currentMeasurement,"targetAz"), 10, 25, 200, 15, Justification::centredLeft);
+	g.drawText("Target elevation: " + m_table.getFromXML(m_currentMeasurement, "targetEl"), 10, 40, 200, 15, Justification::centredLeft);
+	g.drawText("Target distance: " + m_table.getFromXML(m_currentMeasurement, "targetDist"), 10, 55, 200, 15, Justification::centredLeft);
 }
 
 void MeasurementLogic::resized()
 {
-	m_nextMeasurement.setBounds(5, 5, 60, 25);
+	m_nextMeasurement.setBounds(10, 90, 60, 25);
 	m_table.setBounds(5, 120, 480, 250);
 	m_logHeaderTE.setBounds(340+150, 120, 85, 250);
 	m_lastMessage.setBounds(425+150, 120, 195, 250);

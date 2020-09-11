@@ -29,6 +29,7 @@ public:
 
         table.getHeader().setSortColumnId(1, true);                                // [3]
         table.setMultipleSelectionEnabled(false);                                   // [4]
+
     }
 
     int getNumRows() override
@@ -63,50 +64,10 @@ public:
         g.fillRect(width - 1, 0, 1, height);                                                                               // [7]
     }
 
-    void sortOrderChanged(int newSortColumnId, bool isForwards) override
-    {
-        if (newSortColumnId != 0)
-        {
-            TutorialDataSorter sorter(getAttributeNameForColumnId(newSortColumnId), isForwards);
-            dataList->sortChildElements(sorter);
-
-            table.updateContent();
-        }
-    }
-
-    Component* refreshComponentForCell(int rowNumber, int columnId, bool /*isRowSelected*/,
-        Component* existingComponentToUpdate) override
-    {
-        if (columnId == 8)  // [9]
-        {
-            auto* textLabel = static_cast<EditableTextCustomComponent*> (existingComponentToUpdate);
-
-            if (textLabel == nullptr)
-                textLabel = new EditableTextCustomComponent(*this);
-
-            textLabel->setRowAndColumn(rowNumber, columnId);
-            return textLabel;
-        }
-
-        if (columnId == 9)  // [8]
-        {
-            auto* selectionBox = static_cast<SelectionColumnCustomComponent*> (existingComponentToUpdate);
-
-            if (selectionBox == nullptr)
-                selectionBox = new SelectionColumnCustomComponent(*this);
-
-            selectionBox->setRowAndColumn(rowNumber, columnId);
-            return selectionBox;
-        }
-
-        jassert(existingComponentToUpdate == nullptr);
-        return nullptr;     // [10]
-    }
-
     int getColumnAutoSizeWidth(int columnId) override
     {
-        if (columnId == 9)
-            return 50;
+        //if (columnId == 9)
+        //    return 50;
 
         int widest = 32;
 
@@ -123,15 +84,15 @@ public:
         return widest + 8;
     }
 
-    int getSelection(const int rowNumber) const
-    {
-        return dataList->getChildElement(rowNumber)->getIntAttribute("Select");
-    }
+    //int getSelection(const int rowNumber) const
+    //{
+    //    return dataList->getChildElement(rowNumber)->getIntAttribute("Select");
+    //}
 
-    void setSelection(const int rowNumber, const int newSelection)
-    {
-        dataList->getChildElement(rowNumber)->setAttribute("Select", newSelection);
-    }
+    //void setSelection(const int rowNumber, const int newSelection)
+    //{
+    //    dataList->getChildElement(rowNumber)->setAttribute("Select", newSelection);
+    //}
 
     juce::String getText(const int columnNumber, const int rowNumber) const
     {
@@ -148,6 +109,11 @@ public:
     void resized() override
     {
         table.setBoundsInset(juce::BorderSize<int>(8));
+    }
+
+    void selectMeasurementRow(const int id)
+    {
+        table.selectRow(id-1);
     }
 
     String getFromXML(int id, String column)
@@ -172,98 +138,6 @@ private:
     juce::XmlElement* dataList = nullptr;
     int numRows = 0;
 
-    //==============================================================================
-    class EditableTextCustomComponent : public juce::Label
-    {
-    public:
-        EditableTextCustomComponent(MeasurementTable& td)
-            : owner(td)
-        {
-            setEditable(false, true, false);
-        }
-
-        void mouseDown(const juce::MouseEvent& event) override
-        {
-            owner.table.selectRowsBasedOnModifierKeys(row, event.mods, false);
-
-            Label::mouseDown(event);
-        }
-
-        void textWasEdited() override
-        {
-            owner.setText(columnId, row, getText());
-        }
-
-        void setRowAndColumn(const int newRow, const int newColumn)
-        {
-            row = newRow;
-            columnId = newColumn;
-            setText(owner.getText(columnId, row), juce::dontSendNotification);
-        }
-
-    private:
-        MeasurementTable& owner;
-        int row, columnId;
-        juce::Colour textColour;
-    };
-
-    //==============================================================================
-    class SelectionColumnCustomComponent : public Component
-    {
-    public:
-        SelectionColumnCustomComponent(MeasurementTable& td)
-            : owner(td)
-        {
-            addAndMakeVisible(toggleButton);
-
-            toggleButton.onClick = [this] { owner.setSelection(row, (int)toggleButton.getToggleState()); };
-        }
-
-        void resized() override
-        {
-            toggleButton.setBoundsInset(juce::BorderSize<int>(2));
-        }
-
-        void setRowAndColumn(int newRow, int newColumn)
-        {
-            row = newRow;
-            columnId = newColumn;
-            toggleButton.setToggleState((bool)owner.getSelection(row), juce::dontSendNotification);
-        }
-
-    private:
-        MeasurementTable& owner;
-        juce::ToggleButton toggleButton;
-        int row, columnId;
-    };
-
-    //==============================================================================
-    class TutorialDataSorter
-    {
-    public:
-        TutorialDataSorter(const juce::String& attributeToSortBy, bool forwards)
-            : attributeToSort(attributeToSortBy),
-            direction(forwards ? 1 : -1)
-        {}
-
-        int compareElements(juce::XmlElement* first, juce::XmlElement* second) const
-        {
-            auto result = first->getStringAttribute(attributeToSort)
-                .compareNatural(second->getStringAttribute(attributeToSort)); // [1]
-
-            if (result == 0)
-                result = first->getStringAttribute("ID")
-                .compareNatural(second->getStringAttribute("ID"));             // [2]
-
-            return direction * result;                                                          // [3]
-        }
-
-    private:
-        juce::String attributeToSort;
-        int direction;
-    };
-
-    //==============================================================================
     void loadData()
     {
         auto dir = juce::File::getCurrentWorkingDirectory();
