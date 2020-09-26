@@ -1,22 +1,43 @@
 #include "MeasurementLogic.h"
 
-MeasurementLogic::MeasurementLogic()
+MeasurementLogic::MeasurementLogic(OscTransceiver& oscTxRx) : m_currentMeasurement(0)
+															, m_oscTxRx(oscTxRx)
 {
+	m_oscTxRx.addListener(this);
+
 	startTimerHz(60);
 
-	addAndMakeVisible(m_nextMeasurement);
-	m_nextMeasurement.onClick = [this]
+	addAndMakeVisible(m_startStopButton);
+	m_startStopButton.setToggleState(false, dontSendNotification);
+	m_startStopButton.setClickingTogglesState(true);
+	m_startStopButton.onClick = [this]
 	{
-		m_currentMeasurement++;
-		m_table.selectMeasurementRow(m_currentMeasurement);
-		repaint();
+		if (m_startStopButton.getToggleState())
+		{
+			m_startStopButton.setButtonText("Stop");
+			m_oscTxRx.sendOscMessage("/targetVis", 1);
+			nextMeasurement();
+			m_nextMeasurementButton.setEnabled(true);
+
+		}
+		else
+		{
+			m_startStopButton.setButtonText("Start");
+			m_nextMeasurementButton.setEnabled(false);
+			m_currentMeasurement = 0;
+			m_table.selectMeasurementRow(0);
+			m_oscTxRx.sendOscMessage("/targetVis", 0);
+		}
+	};
+
+	addAndMakeVisible(m_nextMeasurementButton);
+	m_nextMeasurementButton.setEnabled(false);
+	m_nextMeasurementButton.onClick = [this]
+	{
+		nextMeasurement();
 	};
 
 	addAndMakeVisible(m_table);
-	if (m_table.getNumRows() > 0)
-	{
-		m_currentMeasurement = 1;
-	}
 
 	m_lastMessage.setColour(Label::outlineColourId, Colours::black);
 	m_lastMessage.setMultiLine(true, false);
@@ -47,14 +68,15 @@ void MeasurementLogic::paint(juce::Graphics& g)
 	g.drawRect(getLocalBounds(), 1);
 
 	g.drawText("Current ID: " + String(m_currentMeasurement), 10, 10, 200, 15, Justification::centredLeft);
-	g.drawText("Target azimuth: " + m_table.getFromXML(m_currentMeasurement,"targetAz"), 10, 25, 200, 15, Justification::centredLeft);
-	g.drawText("Target elevation: " + m_table.getFromXML(m_currentMeasurement, "targetEl"), 10, 40, 200, 15, Justification::centredLeft);
-	g.drawText("Target distance: " + m_table.getFromXML(m_currentMeasurement, "targetDist"), 10, 55, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker azimuth: " + m_table.getFromXML(m_currentMeasurement,"speakerAz"), 10, 25, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker elevation: " + m_table.getFromXML(m_currentMeasurement, "speakerEl"), 10, 40, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker distance: " + m_table.getFromXML(m_currentMeasurement, "speakerDist"), 10, 55, 200, 15, Justification::centredLeft);
 }
 
 void MeasurementLogic::resized()
 {
-	m_nextMeasurement.setBounds(10, 90, 60, 25);
+	m_startStopButton.setBounds(10, 90, 60, 25);
+	m_nextMeasurementButton.setBounds(80, 90, 60, 25);
 	m_table.setBounds(5, 120, 480, 250);
 	m_logHeaderTE.setBounds(340+150, 120, 85, 250);
 	m_lastMessage.setBounds(425+150, 120, 195, 250);
@@ -73,7 +95,7 @@ void MeasurementLogic::oscBundleReceived(const OSCBundle& bundle)
 
 void MeasurementLogic::processOscMessage(const OSCMessage& message)
 {
-	if (message.getAddressPattern().toString() == "/etptr")
+	if (message.getAddressPattern().toString() == "/currentAzEl")
 	{
 		// add message to the message list
 		String arguments;
@@ -92,14 +114,14 @@ void MeasurementLogic::processOscMessage(const OSCMessage& message)
 		oscMessageList.add(messageText);
 	}
 
-	if (message.getAddressPattern().toString() == "/control")
-	{
-		// control the test component
-		if (message[0].isString() && message[0].getString() == "confirm")
-		{
-			//m_nextTrial.triggerClick(); //changeTrial(m_currentTrialIndex + 1);
-		}
-	}
+	//if (message.getAddressPattern().toString() == "/control")
+	//{
+	//	// control the test component
+	//	if (message[0].isString() && message[0].getString() == "confirm")
+	//	{
+	//		//m_nextTrial.triggerClick(); //changeTrial(m_currentTrialIndex + 1);
+	//	}
+	//}
 }
 
 void MeasurementLogic::timerCallback()
@@ -121,7 +143,22 @@ void MeasurementLogic::timerCallback()
 	}
 }
 
-void MeasurementLogic::readTableData()
+void MeasurementLogic::nextMeasurement()
 {
-	//m_table.getText(2, 1);
+	if (m_table.getNumRows() > m_currentMeasurement)
+	{
+		m_currentMeasurement++;
+		m_table.selectMeasurementRow(m_currentMeasurement);
+
+		float speakerAz = m_table.getFromXML(m_currentMeasurement, "speakerAz").getFloatValue();
+		float speakerEl = m_table.getFromXML(m_currentMeasurement, "speakerEl").getFloatValue();
+		float speakerDist = m_table.getFromXML(m_currentMeasurement, "speakerDist").getFloatValue();
+		m_oscTxRx.sendOscMessage("/speaker", speakerAz, speakerEl, speakerDist);
+	}
+	else
+	{
+		m_startStopButton.setToggleState(false, sendNotification);
+	}
+
+	repaint();
 }

@@ -140,9 +140,12 @@ public:
             }
         }
 
-        juce::AudioBuffer<float> buffer(const_cast<float**> (inputChannelData), 2, numSamples);
-        analyzer.getNextAudioBlock(AudioSourceChannelInfo(&buffer, 0, numSamples));
-
+        //analyzer
+        if (numInputChannels >= 2)
+        {
+            juce::AudioBuffer<float> buffer(const_cast<float**> (inputChannelData), 2, numSamples);
+            analyzer.getNextAudioBlock(AudioSourceChannelInfo(&buffer, 0, numSamples));
+        }
     }
 
 private:

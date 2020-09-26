@@ -1,0 +1,62 @@
+<TABLE_DATA>
+    <HEADERS>
+        <COLUMN columnId="1" name="ID" width="50"/>
+        <COLUMN columnId="2" name="speakerAz" width="80"/>
+        <COLUMN columnId="3" name="speakerEl" width="80"/>
+        <COLUMN columnId="4" name="angDev" width="70"/>
+        <COLUMN columnId="5" name="speakerDist" width="80"/>
+        <COLUMN columnId="6" name="distDev" width="70"/>
+    </HEADERS>
+    <DATA>
+        <ITEM ID="1" speakerAz="0.00" speakerEl="90.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="2" speakerAz="0.00" speakerEl="0.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="3" speakerAz="0.00" speakerEl="-90.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="4" speakerAz="0.00" speakerEl="45.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="5" speakerAz="0.00" speakerEl="-45.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="6" speakerAz="18.40" speakerEl="17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="7" speakerAz="18.40" speakerEl="-17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="8" speakerAz="45.00" speakerEl="0.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="9" speakerAz="45.00" speakerEl="64.80" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="10" speakerAz="45.00" speakerEl="35.30" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="11" speakerAz="45.00" speakerEl="-35.30" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="12" speakerAz="45.00" speakerEl="-64.80" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="13" speakerAz="71.60" speakerEl="17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="14" speakerAz="71.60" speakerEl="-17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="15" speakerAz="90.00" speakerEl="0.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="16" speakerAz="90.00" speakerEl="45.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="17" speakerAz="90.00" speakerEl="-45.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="18" speakerAz="108.40" speakerEl="17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="19" speakerAz="108.40" speakerEl="-17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="20" speakerAz="135.00" speakerEl="0.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="21" speakerAz="135.00" speakerEl="64.80" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="22" speakerAz="135.00" speakerEl="35.30" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="23" speakerAz="135.00" speakerEl="-35.30" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="24" speakerAz="135.00" speakerEl="-64.80" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="25" speakerAz="161.60" speakerEl="17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="26" speakerAz="161.60" speakerEl="-17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="27" speakerAz="180.00" speakerEl="0.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="28" speakerAz="180.00" speakerEl="45.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="29" speakerAz="180.00" speakerEl="-45.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="30" speakerAz="-161.60" speakerEl="17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="31" speakerAz="-161.60" speakerEl="-17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="32" speakerAz="-135.00" speakerEl="0.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="33" speakerAz="-135.00" speakerEl="64.80" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="34" speakerAz="-135.00" speakerEl="35.30" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="35" speakerAz="-135.00" speakerEl="-35.30" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="36" speakerAz="-135.00" speakerEl="-64.80" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="37" speakerAz="-108.40" speakerEl="17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="38" speakerAz="-108.40" speakerEl="-17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="39" speakerAz="-90.00" speakerEl="0.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="40" speakerAz="-90.00" speakerEl="45.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="41" speakerAz="-90.00" speakerEl="-45.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="42" speakerAz="-71.60" speakerEl="17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="43" speakerAz="-71.60" speakerEl="-17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="44" speakerAz="-45.00" speakerEl="64.80" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="45" speakerAz="-45.00" speakerEl="35.30" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="46" speakerAz="-45.00" speakerEl="-35.30" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="47" speakerAz="-45.00" speakerEl="-64.80" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="48" speakerAz="-45.00" speakerEl="0.00" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="49" speakerAz="-18.40" speakerEl="17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+        <ITEM ID="50" speakerAz="-18.40" speakerEl="-17.50" angDev="5.00" speakerDist="1.20" distDev="0.10"/>
+    </DATA>
+</TABLE_DATA>

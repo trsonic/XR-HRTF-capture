@@ -1,7 +1,7 @@
 close all
 clear
 
-targetAzEl = [
+speakerAzEl = [
 0	90
 0	0
 0	-90
@@ -54,21 +54,22 @@ targetAzEl = [
 -18.4	-17.5
 ];
 
-headers = {'ID','targetAz','targetEl','angDev','targetDist','distDev'};
+headers = {'ID','speakerAz','speakerEl','angDev','speakerDist','distDev'};
+width = [50, 80, 80, 70, 80, 70];
 
 %% SAVE CONFIG FILE
-fileID = fopen('target_angles.xml', 'w');
+fileID = fopen('speaker_angles.xml', 'w');
 fprintf(fileID,'<TABLE_DATA>\n');
 fprintf(fileID,'    <HEADERS>\n');
 for i = 1:length(headers)
-    fprintf(fileID,'        <COLUMN columnId="%.0f" name="%s" width="50"/>\n', i, string(headers(i)));
+    fprintf(fileID,'        <COLUMN columnId="%.0f" name="%s" width="%.0f"/>\n', i, string(headers(i)), width(i));
 end
 fprintf(fileID,'    </HEADERS>\n');
 fprintf(fileID,'    <DATA>\n');
-for i = 1:length(targetAzEl)
+for i = 1:length(speakerAzEl)
     params = sprintf('%s="%.0f"', string(headers(1)), i);
-    params = [params ' ' sprintf('%s="%.2f"', string(headers(2)), targetAzEl(i,1))];
-    params = [params ' ' sprintf('%s="%.2f"', string(headers(3)), targetAzEl(i,2))];
+    params = [params ' ' sprintf('%s="%.2f"', string(headers(2)), speakerAzEl(i,1))];
+    params = [params ' ' sprintf('%s="%.2f"', string(headers(3)), speakerAzEl(i,2))];
     params = [params ' ' sprintf('%s="%.2f"', string(headers(4)), 5)];
     params = [params ' ' sprintf('%s="%.2f"', string(headers(5)), 1.2)];
     params = [params ' ' sprintf('%s="%.2f"', string(headers(6)), 0.1)];

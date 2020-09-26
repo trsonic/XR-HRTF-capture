@@ -1,5 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
+#include "OscTransceiver.h"
 #include "MeasurementTable.h"
 
 class MeasurementLogic	: public Component
@@ -7,7 +8,7 @@ class MeasurementLogic	: public Component
 						, public Timer
 {
 public:
-	MeasurementLogic();
+	MeasurementLogic(OscTransceiver &m_oscTxRx);
 	~MeasurementLogic() override;
 
 	void paint(juce::Graphics& g) override;
@@ -17,13 +18,14 @@ public:
 	void timerCallback() override;
 
 private:
+	OscTransceiver& m_oscTxRx;
 	void processOscMessage(const OSCMessage& message);
-	void readTableData();
+	void nextMeasurement();
 	double m_activationTime = 0.0f;
 	StringArray oscMessageList;
 
-	int m_currentMeasurement = 0;
-	TextButton m_nextMeasurement{"Next"};
+	int m_currentMeasurement;
+	TextButton m_startStopButton{"Start"}, m_nextMeasurementButton{ "Next" };
 
 	MeasurementTable m_table;
 	TextEditor m_lastMessage, m_logHeaderTE;

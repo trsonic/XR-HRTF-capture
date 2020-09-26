@@ -113,12 +113,17 @@ public:
 
     void selectMeasurementRow(const int id)
     {
-        table.selectRow(id-1);
+        if (id == 0)
+            table.deselectAllRows();
+        else if (id >= 1)
+            table.selectRow(id - 1);
+        else
+            return;
     }
 
     String getFromXML(int id, String column)
     {
-        if (id <= dataList->getNumChildElements())
+        if (id >= 1 && id <= dataList->getNumChildElements())
         {
             int colId = columnList->getChildByAttribute("name", column)->getAttributeValue(0).getIntValue();
             return dataList->getChildByAttribute("ID", String(id))->getAttributeValue(colId - 1);
@@ -147,7 +152,7 @@ private:
         while (!dir.getChildFile("Resources").exists() && numTries++ < 15)
             dir = dir.getParentDirectory();
 
-        auto tableFile = dir.getChildFile("Resources").getChildFile("target_angles.xml");
+        auto tableFile = dir.getChildFile("Resources").getChildFile("speaker_angles.xml");
 
         if (tableFile.exists())
         {

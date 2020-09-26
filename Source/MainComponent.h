@@ -33,7 +33,7 @@ private:
     AudioRecorder recorder{ recordingThumbnail.getAudioThumbnail(), m_analyzer };
     AudioSetup m_audioSetup;
     OscTransceiver m_oscTxRx;
-    MeasurementLogic m_logic;
+    MeasurementLogic m_logic{m_oscTxRx};
 
     TextButton loadSweepButton{"Load Sweep"}, measureButton{ "Measure" }, stopButton{ "Stop" }, setupButton{ "Audio Setup" };
     TextButton connectOscButton;
