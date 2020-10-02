@@ -47,6 +47,7 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 	addAndMakeVisible(&connectOscButton);
 
 	addAndMakeVisible(m_logic);
+	m_logic.addChangeListener(this);
 
     audioDeviceManager.initialise(2, 2, nullptr, true, {}, nullptr);
     audioDeviceManager.addAudioCallback(&recorder);
@@ -159,6 +160,29 @@ void MainComponent::changeListenerCallback(ChangeBroadcaster* source)
 		{
 			measureButton.setEnabled(true);
 			stopButton.setEnabled(false);
+
+			if (recorder.isRecordingFinished() && (m_logic.isMeasurementOn() || m_logic.isReferenceMeasurementOn()))
+			{
+				File measuredSweep = sweepFile.getParentDirectory().getChildFile(m_logic.getCurrentName());;
+				lastRecording.copyFileTo(measuredSweep);
+				if(m_logic.isMeasurementOn()) m_logic.nextMeasurement();
+			}
+		}
+	}
+
+	if (source == &m_logic)
+	{
+		if (m_logic.isMeasurementOn())
+		{
+			if (m_logic.isOrientationLocked())
+				startRecording();
+			else
+				stopRecording();
+		}
+		else if (m_logic.isReferenceMeasurementOn())
+		{
+			stopRecording();
+			startRecording();
 		}
 	}
 }
@@ -172,14 +196,20 @@ void MainComponent::loadSweep(File file)
 
 void MainComponent::startRecording()
 {
-	lastRecording = sweepFile.getParentDirectory().getChildFile("LR_temp_sweep.wav");
-    recorder.startRecording(lastRecording);
+	if (!recorder.isRecording())
+	{
+		lastRecording = sweepFile.getParentDirectory().getChildFile("LR_temp_sweep.wav");
+		recorder.startRecording(lastRecording);
+	}
 }
 
 void MainComponent::stopRecording()
 {
-    recorder.stop();
-    lastRecording = juce::File();
+	if (recorder.isRecording())
+	{
+		recorder.stop();
+		lastRecording = juce::File();
+	}
 }
 
 void MainComponent::loadSettings()

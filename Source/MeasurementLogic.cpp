@@ -6,6 +6,7 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& oscTxRx) : m_currentMeasureme
 	m_oscTxRx.addListener(this);
 
 	startTimerHz(60);
+	m_activationTime = Time::getMillisecondCounterHiRes();
 
 	addAndMakeVisible(m_startStopButton);
 	m_startStopButton.setToggleState(false, dontSendNotification);
@@ -14,11 +15,12 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& oscTxRx) : m_currentMeasureme
 	{
 		if (m_startStopButton.getToggleState())
 		{
+			referenceMeasurementOn = false;
 			m_startStopButton.setButtonText("Stop");
 			m_oscTxRx.sendOscMessage("/targetVis", 1);
 			nextMeasurement();
 			m_nextMeasurementButton.setEnabled(true);
-
+			m_referenceMeasurementButton.setEnabled(false);
 		}
 		else
 		{
@@ -27,6 +29,7 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& oscTxRx) : m_currentMeasureme
 			m_currentMeasurement = 0;
 			m_table.selectMeasurementRow(0);
 			m_oscTxRx.sendOscMessage("/targetVis", 0);
+			m_referenceMeasurementButton.setEnabled(true);
 		}
 	};
 
@@ -35,6 +38,14 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& oscTxRx) : m_currentMeasureme
 	m_nextMeasurementButton.onClick = [this]
 	{
 		nextMeasurement();
+	};
+
+	addAndMakeVisible(m_referenceMeasurementButton);
+	m_referenceMeasurementButton.setEnabled(true);
+	m_referenceMeasurementButton.onClick = [this]
+	{
+		referenceMeasurementOn = true;
+		sendChangeMessage();
 	};
 
 	addAndMakeVisible(m_table);
@@ -71,12 +82,15 @@ void MeasurementLogic::paint(juce::Graphics& g)
 	g.drawText("Speaker azimuth: " + m_table.getFromXML(m_currentMeasurement,"speakerAz"), 10, 25, 200, 15, Justification::centredLeft);
 	g.drawText("Speaker elevation: " + m_table.getFromXML(m_currentMeasurement, "speakerEl"), 10, 40, 200, 15, Justification::centredLeft);
 	g.drawText("Speaker distance: " + m_table.getFromXML(m_currentMeasurement, "speakerDist"), 10, 55, 200, 15, Justification::centredLeft);
+
+	//g.drawText("Number of OSC messages: " + String(oscMessageList.size()), 220, 10, 200, 15, Justification::centredLeft);
 }
 
 void MeasurementLogic::resized()
 {
 	m_startStopButton.setBounds(10, 90, 60, 25);
 	m_nextMeasurementButton.setBounds(80, 90, 60, 25);
+	m_referenceMeasurementButton.setBounds(150, 90, 90, 25);
 	m_table.setBounds(5, 120, 480, 250);
 	m_logHeaderTE.setBounds(340+150, 120, 85, 250);
 	m_lastMessage.setBounds(425+150, 120, 195, 250);
@@ -95,7 +109,7 @@ void MeasurementLogic::oscBundleReceived(const OSCBundle& bundle)
 
 void MeasurementLogic::processOscMessage(const OSCMessage& message)
 {
-	if (message.getAddressPattern().toString() == "/currentAzEl")
+	if (message.getAddressPattern().toString() == "/headOrientation")
 	{
 		// add message to the message list
 		String arguments;
@@ -107,49 +121,39 @@ void MeasurementLogic::processOscMessage(const OSCMessage& message)
 		}
 
 		double time = Time::getMillisecondCounterHiRes() - m_activationTime;
-		String messageText = String((int)time) + "," + "blabla" + ",";
-		messageText += "no stimulus present," + message.getAddressPattern().toString() + arguments + "\n";
-
+		String messageText = String((int)time) + ",";
+		messageText += message.getAddressPattern().toString() + arguments + "\n";
 
 		oscMessageList.add(messageText);
 	}
-
-	//if (message.getAddressPattern().toString() == "/control")
-	//{
-	//	// control the test component
-	//	if (message[0].isString() && message[0].getString() == "confirm")
-	//	{
-	//		//m_nextTrial.triggerClick(); //changeTrial(m_currentTrialIndex + 1);
-	//	}
-	//}
 }
 
 void MeasurementLogic::timerCallback()
 {
-	//m_messageCounter.setText(String(oscMessageList.size()), dontSendNotification);
-
 	if (oscMessageList.size() > 0)
 	{
-		//m_saveLogButton.setEnabled(true);
-
 		String lastMsg = oscMessageList[oscMessageList.size() - 1];
 		lastMsg = lastMsg.replace(",", "\n");
 		m_lastMessage.setText(lastMsg, dontSendNotification);
+
+		analyzeOscMsgList();
 	}
 	else
 	{
-		//m_saveLogButton.setEnabled(false);
 		m_lastMessage.setText("", dontSendNotification);
 	}
+
 }
 
 void MeasurementLogic::nextMeasurement()
 {
 	if (m_table.getNumRows() > m_currentMeasurement)
 	{
+		orientationLocked = false;
+		sendChangeMessage();
+		oscMessageList.clear();
 		m_currentMeasurement++;
 		m_table.selectMeasurementRow(m_currentMeasurement);
-
 		float speakerAz = m_table.getFromXML(m_currentMeasurement, "speakerAz").getFloatValue();
 		float speakerEl = m_table.getFromXML(m_currentMeasurement, "speakerEl").getFloatValue();
 		float speakerDist = m_table.getFromXML(m_currentMeasurement, "speakerDist").getFloatValue();
@@ -161,4 +165,62 @@ void MeasurementLogic::nextMeasurement()
 	}
 
 	repaint();
+}
+
+void MeasurementLogic::analyzeOscMsgList()
+{
+	int oscBufferLength = 60;
+	int listSize = oscMessageList.size();
+	if (listSize >= oscBufferLength)
+	{
+		Array<float> ang;
+		for (int i = 0; i < oscBufferLength; ++i)
+		{
+			StringArray msg;
+			msg.addTokens(oscMessageList[listSize - oscBufferLength + i], ",", "\"");
+			ang.set(i, msg[5].getFloatValue());
+		}
+
+		float angAvg = 0.0f;
+		for (int i = 0; i < ang.size(); ++i)
+		{
+			angAvg += ang[i];
+		}
+		angAvg /= ang.size();
+
+		if (angAvg <= 2.0f && orientationLocked == false)
+		{
+			orientationLocked = true;
+			sendChangeMessage();
+			DBG("OK! - " + String(angAvg));
+		}
+		else if (angAvg > 2.0f && orientationLocked == true)
+		{
+			oscMessageList.clear();
+			orientationLocked = false;
+			sendChangeMessage();
+			DBG("NO! - " + String(angAvg));
+		}
+	}
+
+
+}
+
+String MeasurementLogic::getCurrentName()
+{
+	String filename;
+
+	if (referenceMeasurementOn)
+	{
+		filename += "00_reference.wav";
+	}
+	else
+	{
+		filename += m_table.getFromXML(m_currentMeasurement, "ID");
+		filename += "_azi_" + m_table.getFromXML(m_currentMeasurement, "speakerAz");
+		filename += "_ele_" + m_table.getFromXML(m_currentMeasurement, "speakerEl");
+		filename += ".wav";
+	}
+
+	return filename;
 }

@@ -79,8 +79,8 @@ public:
     void stop()
     {
         const juce::ScopedLock sl(writerLock);
-        activeWriter = nullptr;
         sweepPosition = 0;
+        activeWriter = nullptr;
         threadedWriter.reset();
         sendChangeMessage();
     }
@@ -88,6 +88,11 @@ public:
     bool isRecording() const
     {
         return activeWriter.load() != nullptr;
+    }
+
+    bool isRecordingFinished() const
+    {
+        return recordingFinished;
     }
 
     void audioDeviceAboutToStart(juce::AudioIODevice* device) override
@@ -112,6 +117,7 @@ public:
             int sweepLength = sweepBuffer.getNumSamples();
             if (sweepPosition + numSamples <= sweepLength)
             {
+                recordingFinished = false;
                 int numberOfSweepSamples = jmin(numSamples, sweepLength - sweepPosition);
                 for (int i = 0; i < numOutputChannels; ++i)
                 {
@@ -121,6 +127,7 @@ public:
             }
             else
             {
+                recordingFinished = true;
                 stop();
                 return;
             }
@@ -159,6 +166,7 @@ private:
     juce::AudioSampleBuffer sweepBuffer;
     float sweepLength = 0.0;
     int sweepPosition = 0;
+    bool recordingFinished = true;
 
     juce::CriticalSection writerLock;
     std::atomic<juce::AudioFormatWriter::ThreadedWriter*> activeWriter{ nullptr };

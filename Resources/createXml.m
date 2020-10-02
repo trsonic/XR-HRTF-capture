@@ -67,7 +67,7 @@ end
 fprintf(fileID,'    </HEADERS>\n');
 fprintf(fileID,'    <DATA>\n');
 for i = 1:length(speakerAzEl)
-    params = sprintf('%s="%.0f"', string(headers(1)), i);
+    params = sprintf('%s="%02d"', string(headers(1)), i);
     params = [params ' ' sprintf('%s="%.2f"', string(headers(2)), speakerAzEl(i,1))];
     params = [params ' ' sprintf('%s="%.2f"', string(headers(3)), speakerAzEl(i,2))];
     params = [params ' ' sprintf('%s="%.2f"', string(headers(4)), 5)];

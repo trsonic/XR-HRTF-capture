@@ -6,6 +6,7 @@
 class MeasurementLogic	: public Component
 						, public OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 						, public Timer
+						, public ChangeBroadcaster
 {
 public:
 	MeasurementLogic(OscTransceiver &m_oscTxRx);
@@ -17,18 +18,41 @@ public:
 	void oscBundleReceived(const OSCBundle& bundle) override;
 	void timerCallback() override;
 
+	void nextMeasurement();
+	String getCurrentName();
+
+	bool isOrientationLocked()
+	{
+		return orientationLocked;
+	}
+
+	bool isMeasurementOn()
+	{
+		return m_startStopButton.getToggleState();
+	}
+
+	bool isReferenceMeasurementOn()
+	{
+		return referenceMeasurementOn;
+	}
+
 private:
 	OscTransceiver& m_oscTxRx;
 	void processOscMessage(const OSCMessage& message);
-	void nextMeasurement();
+
+	void analyzeOscMsgList();
+
 	double m_activationTime = 0.0f;
 	StringArray oscMessageList;
 
+	bool orientationLocked = false;
+	bool referenceMeasurementOn = false;
+
 	int m_currentMeasurement;
-	TextButton m_startStopButton{"Start"}, m_nextMeasurementButton{ "Next" };
+	TextButton m_startStopButton{"Start"}, m_nextMeasurementButton{ "Next" }, m_referenceMeasurementButton{ "Reference" };
 
 	MeasurementTable m_table;
 	TextEditor m_lastMessage, m_logHeaderTE;
-	String m_logHeader = "salte_time,trial_index,stimulus,osc_pattern,ml_time,et_az,et_el,et_rot,et_dist,et_conf,cal_status,leye_conf,reye_conf,ptr_az,ptr_el,target_az,target_el\n";
+	String m_logHeader = "salte_time,osc_pattern,ml_time,azimuth,elevation,hdSpkAngDev,spkHdAngDev,distance,distDev\n";
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MeasurementLogic)
 };
