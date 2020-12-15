@@ -79,9 +79,9 @@ void MeasurementLogic::paint(juce::Graphics& g)
 	g.drawRect(getLocalBounds(), 1);
 
 	g.drawText("Current ID: " + String(m_currentMeasurement), 10, 10, 200, 15, Justification::centredLeft);
-	g.drawText("Speaker azimuth: " + m_table.getFromXML(m_currentMeasurement,"speakerAz"), 10, 25, 200, 15, Justification::centredLeft);
-	g.drawText("Speaker elevation: " + m_table.getFromXML(m_currentMeasurement, "speakerEl"), 10, 40, 200, 15, Justification::centredLeft);
-	g.drawText("Speaker distance: " + m_table.getFromXML(m_currentMeasurement, "speakerDist"), 10, 55, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker azimuth: " + m_table.getFromXML(m_currentMeasurement,"spkAz"), 10, 25, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker elevation: " + m_table.getFromXML(m_currentMeasurement, "spkEl"), 10, 40, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker distance: " + m_table.getFromXML(m_currentMeasurement, "spkDist"), 10, 55, 200, 15, Justification::centredLeft);
 
 	//g.drawText("Number of OSC messages: " + String(oscMessageList.size()), 220, 10, 200, 15, Justification::centredLeft);
 }
@@ -150,13 +150,14 @@ void MeasurementLogic::nextMeasurement()
 	if (m_table.getNumRows() > m_currentMeasurement)
 	{
 		orientationLocked = false;
+		m_oscTxRx.sendOscMessage("/orientationLocked", 0);
 		sendChangeMessage();
 		oscMessageList.clear();
 		m_currentMeasurement++;
 		m_table.selectMeasurementRow(m_currentMeasurement);
-		float speakerAz = m_table.getFromXML(m_currentMeasurement, "speakerAz").getFloatValue();
-		float speakerEl = m_table.getFromXML(m_currentMeasurement, "speakerEl").getFloatValue();
-		float speakerDist = m_table.getFromXML(m_currentMeasurement, "speakerDist").getFloatValue();
+		float speakerAz = m_table.getFromXML(m_currentMeasurement, "spkAz").getFloatValue();
+		float speakerEl = m_table.getFromXML(m_currentMeasurement, "spkEl").getFloatValue();
+		float speakerDist = m_table.getFromXML(m_currentMeasurement, "spkDist").getFloatValue();
 		m_oscTxRx.sendOscMessage("/speaker", speakerAz, speakerEl, speakerDist);
 	}
 	else
@@ -169,41 +170,67 @@ void MeasurementLogic::nextMeasurement()
 
 void MeasurementLogic::analyzeOscMsgList()
 {
-	int oscBufferLength = 60;
+	int msgHistorySize = 60; // number of messages that is required to start calculating avg angle for orientation lock
 	int listSize = oscMessageList.size();
-	if (listSize >= oscBufferLength)
+	float angAccLimit = m_table.getFromXML(m_currentMeasurement, "angAcc").getFloatValue(); // accuracy condition to start the measurement
+	float angPrecLimit = m_table.getFromXML(m_currentMeasurement, "angPrec").getFloatValue(); // precision condition to complete the measurement
+
+	if (listSize >= msgHistorySize && orientationLocked == false)
 	{
-		Array<float> ang;
-		for (int i = 0; i < oscBufferLength; ++i)
+		StatisticsAccumulator<float> angAcc;
+		for (int i = 0; i < msgHistorySize; ++i)
 		{
 			StringArray msg;
-			msg.addTokens(oscMessageList[listSize - oscBufferLength + i], ",", "\"");
-			ang.set(i, msg[5].getFloatValue());
+			msg.addTokens(oscMessageList[listSize - msgHistorySize + i], ",", "\"");
+			angAcc.addValue(msg[6].getFloatValue());
 		}
+		float angAvg = angAcc.getAverage();
 
-		float angAvg = 0.0f;
-		for (int i = 0; i < ang.size(); ++i)
-		{
-			angAvg += ang[i];
-		}
-		angAvg /= ang.size();
-
-		if (angAvg <= 2.0f && orientationLocked == false)
+		if (angAvg <= angAccLimit)
 		{
 			orientationLocked = true;
+			m_oscTxRx.sendOscMessage("/orientationLocked", 1);
+			oscMessageList.clear();
 			sendChangeMessage();
-			DBG("OK! - " + String(angAvg));
+			DBG("Accuracy OK to start: " + String(angAvg));
 		}
-		else if (angAvg > 2.0f && orientationLocked == true)
+	}
+	else if (orientationLocked == true)
+	{
+		StatisticsAccumulator<float> angAcc;
+		for (int i = 0; i < listSize; ++i)
+		{
+			StringArray msg;
+			msg.addTokens(oscMessageList[i], ",", "\"");
+			angAcc.addValue(msg[6].getFloatValue());
+		}
+		float angStd = angAcc.getStandardDeviation();
+
+		if (angStd > angPrecLimit)
 		{
 			oscMessageList.clear();
 			orientationLocked = false;
+			m_oscTxRx.sendOscMessage("/orientationLocked", 0);
 			sendChangeMessage();
-			DBG("NO! - " + String(angAvg));
+			DBG("Not enough precision to continue:" + String(angStd));
+		}
+		else
+		{
+			// accuracy and precision ok
+			// calculate mean azimuth, elevation and distance
+			StatisticsAccumulator<float> azi, ele, dist;
+			for (int i = 0; i < listSize; ++i)
+			{
+				StringArray msg;
+				msg.addTokens(oscMessageList[i], ",", "\"");
+				//azi.addValue(msg[3].getFloatValue()); this should be averaged in cartesian or using circstats
+				//ele.addValue(msg[4].getFloatValue());
+				dist.addValue(msg[5].getFloatValue());
+
+			}
+			meanDist = angAcc.getAverage();
 		}
 	}
-
-
 }
 
 String MeasurementLogic::getCurrentName()
@@ -216,9 +243,10 @@ String MeasurementLogic::getCurrentName()
 	}
 	else
 	{
-		filename += m_table.getFromXML(m_currentMeasurement, "ID");
-		filename += "_azi_" + m_table.getFromXML(m_currentMeasurement, "speakerAz");
-		filename += "_ele_" + m_table.getFromXML(m_currentMeasurement, "speakerEl");
+		filename += String(m_table.getFromXML(m_currentMeasurement, "ID").getTrailingIntValue()).paddedLeft('0', 2);
+		filename += "_azi_" + m_table.getFromXML(m_currentMeasurement, "spkAz");
+		filename += "_ele_" + m_table.getFromXML(m_currentMeasurement, "spkEl");
+		filename += "_dist_" + String(meanDist,2);
 		filename += ".wav";
 	}
 

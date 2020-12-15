@@ -7,17 +7,15 @@ clear
 
 ls = getLebedevSphere(50); % 50, ...
 ls50leb(:,1) = ls.x;
-ls50leb(:,2) = ls.y;
-ls50leb(:,3) = ls.z;
+lsxyz(:,2) = ls.y;
+lsxyz(:,3) = ls.z;
 
 ls = getLebedevSphere(86); % 50, ...
 ls86leb(:,1) = ls.x;
 ls86leb(:,2) = ls.y;
 ls86leb(:,3) = ls.z;
 
-lsxyz = unique([ls50leb; ls86leb],'rows');
-
-[speakerAzEl(:,1), speakerAzEl(:,2), ~] = cart2sph(lsxyz(:,1),lsxyz(:,2),lsxyz(:,3));
+[speakerAzEl(:,1), speakerAzEl(:,2), ~] = cart2sph(ls.x,ls.y,ls.z);
 speakerAzEl = rad2deg(speakerAzEl);
 
 [tf, index]=ismember(speakerAzEl,[0 -90],'rows');

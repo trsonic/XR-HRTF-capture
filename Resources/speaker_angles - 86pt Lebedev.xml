@@ -1,0 +1,99 @@
+<TABLE_DATA>
+    <HEADERS>
+        <COLUMN columnId="1" name="ID" width="45"/>
+        <COLUMN columnId="2" name="spkAz" width="65"/>
+        <COLUMN columnId="3" name="spkEl" width="65"/>
+        <COLUMN columnId="4" name="spkDist" width="65"/>
+        <COLUMN columnId="5" name="angAcc" width="65"/>
+        <COLUMN columnId="6" name="angPrec" width="65"/>
+        <COLUMN columnId="7" name="distAcc" width="65"/>
+    </HEADERS>
+    <DATA>
+        <ITEM ID="1" spkAz="0.00" spkEl="-68.02" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="2" spkAz="0.00" spkEl="-21.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="3" spkAz="0.00" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="4" spkAz="0.00" spkEl="21.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="5" spkAz="0.00" spkEl="68.02" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="6" spkAz="0.00" spkEl="90.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="7" spkAz="15.23" spkEl="-43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="8" spkAz="15.23" spkEl="43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="9" spkAz="21.98" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="10" spkAz="23.44" spkEl="-21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="11" spkAz="23.44" spkEl="21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="12" spkAz="45.00" spkEl="-58.49" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="13" spkAz="45.00" spkEl="-35.26" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="14" spkAz="45.00" spkEl="-10.90" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="15" spkAz="45.00" spkEl="10.90" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="16" spkAz="45.00" spkEl="35.26" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="17" spkAz="45.00" spkEl="58.49" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="18" spkAz="66.56" spkEl="-21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="19" spkAz="66.56" spkEl="21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="20" spkAz="68.02" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="21" spkAz="74.77" spkEl="-43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="22" spkAz="74.77" spkEl="43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="23" spkAz="90.00" spkEl="-68.02" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="24" spkAz="90.00" spkEl="-21.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="25" spkAz="90.00" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="26" spkAz="90.00" spkEl="21.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="27" spkAz="90.00" spkEl="68.02" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="28" spkAz="105.23" spkEl="-43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="29" spkAz="105.23" spkEl="43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="30" spkAz="111.98" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="31" spkAz="113.44" spkEl="-21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="32" spkAz="113.44" spkEl="21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="33" spkAz="135.00" spkEl="-58.49" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="34" spkAz="135.00" spkEl="-35.26" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="35" spkAz="135.00" spkEl="-10.90" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="36" spkAz="135.00" spkEl="10.90" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="37" spkAz="135.00" spkEl="35.26" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="38" spkAz="135.00" spkEl="58.49" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="39" spkAz="156.56" spkEl="-21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="40" spkAz="156.56" spkEl="21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="41" spkAz="158.02" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="42" spkAz="164.77" spkEl="-43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="43" spkAz="164.77" spkEl="43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="44" spkAz="180.00" spkEl="-90.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="45" spkAz="180.00" spkEl="-68.02" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="46" spkAz="180.00" spkEl="-21.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="47" spkAz="180.00" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="48" spkAz="180.00" spkEl="21.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="49" spkAz="180.00" spkEl="68.02" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="50" spkAz="-164.77" spkEl="-43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="51" spkAz="-164.77" spkEl="43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="52" spkAz="-158.02" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="53" spkAz="-156.56" spkEl="-21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="54" spkAz="-156.56" spkEl="21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="55" spkAz="-135.00" spkEl="-58.49" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="56" spkAz="-135.00" spkEl="-35.26" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="57" spkAz="-135.00" spkEl="-10.90" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="58" spkAz="-135.00" spkEl="10.90" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="59" spkAz="-135.00" spkEl="35.26" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="60" spkAz="-135.00" spkEl="58.49" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="61" spkAz="-113.44" spkEl="-21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="62" spkAz="-113.44" spkEl="21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="63" spkAz="-111.98" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="64" spkAz="-105.23" spkEl="-43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="65" spkAz="-105.23" spkEl="43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="66" spkAz="-90.00" spkEl="-68.02" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="67" spkAz="-90.00" spkEl="-21.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="68" spkAz="-90.00" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="69" spkAz="-90.00" spkEl="21.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="70" spkAz="-90.00" spkEl="68.02" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="71" spkAz="-74.77" spkEl="-43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="72" spkAz="-74.77" spkEl="43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="73" spkAz="-68.02" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="74" spkAz="-66.56" spkEl="-21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="75" spkAz="-66.56" spkEl="21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="76" spkAz="-45.00" spkEl="-58.49" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="77" spkAz="-45.00" spkEl="-35.26" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="78" spkAz="-45.00" spkEl="-10.90" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="79" spkAz="-45.00" spkEl="10.90" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="80" spkAz="-45.00" spkEl="35.26" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="81" spkAz="-45.00" spkEl="58.49" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="82" spkAz="-23.44" spkEl="-21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="83" spkAz="-23.44" spkEl="21.69" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="84" spkAz="-21.98" spkEl="0.00" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="85" spkAz="-15.23" spkEl="-43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+        <ITEM ID="86" spkAz="-15.23" spkEl="43.98" spkDist="3.00" angAcc="2.00" angPrec="1.00" distAcc="0.10"/>
+    </DATA>
+</TABLE_DATA>

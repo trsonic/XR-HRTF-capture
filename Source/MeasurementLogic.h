@@ -44,6 +44,7 @@ private:
 
 	double m_activationTime = 0.0f;
 	StringArray oscMessageList;
+	float meanAz, meanEl, meanDist;
 
 	bool orientationLocked = false;
 	bool referenceMeasurementOn = false;
@@ -53,6 +54,6 @@ private:
 
 	MeasurementTable m_table;
 	TextEditor m_lastMessage, m_logHeaderTE;
-	String m_logHeader = "salte_time,osc_pattern,ml_time,azimuth,elevation,hdSpkAngDev,spkHdAngDev,distance,distDev\n";
+	String m_logHeader = "salte_time,osc_pattern,ml_time,azimuth,elevation,distance,hdSpkAngDev,spkHdAngDev,distDev\n";
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MeasurementLogic)
 };

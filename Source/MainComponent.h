@@ -10,7 +10,6 @@
 class MainComponent     : public Component
                         , public Button::Listener
                         , private ChangeListener
-
 {
 public:
     

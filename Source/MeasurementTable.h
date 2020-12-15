@@ -66,9 +66,6 @@ public:
 
     int getColumnAutoSizeWidth(int columnId) override
     {
-        //if (columnId == 9)
-        //    return 50;
-
         int widest = 32;
 
         for (auto i = getNumRows(); --i >= 0;)
@@ -126,7 +123,7 @@ public:
         if (id >= 1 && id <= dataList->getNumChildElements())
         {
             int colId = columnList->getChildByAttribute("name", column)->getAttributeValue(0).getIntValue();
-            return dataList->getChildByAttribute("ID", String(id).formatted("%02d"))->getAttributeValue(colId - 1);
+            return dataList->getChildByAttribute("ID", String(id))->getAttributeValue(colId - 1);
         }
         else
         {
