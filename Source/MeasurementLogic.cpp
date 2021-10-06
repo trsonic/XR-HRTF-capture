@@ -228,7 +228,7 @@ void MeasurementLogic::analyzeOscMsgList()
 				dist.addValue(msg[5].getFloatValue());
 
 			}
-			meanDist = angAcc.getAverage();
+			meanDist = dist.getAverage();
 		}
 	}
 }

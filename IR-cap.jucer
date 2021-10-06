@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="BbzPtB" name="IR-cap" projectType="guiapp" useAppConfig="0"
-              displaySplashScreen="1" jucerFormatVersion="1">
+              displaySplashScreen="1" jucerFormatVersion="1" defines="JUCE_MODAL_LOOPS_PERMITTED=1">
   <MAINGROUP id="gjxHQA" name="IR-cap">
     <GROUP id="{E90D7BB1-1849-CF8E-EA28-70B9C369C594}" name="Source">
       <FILE id="C7RH5u" name="AudioAnalyzer.h" compile="0" resource="0" file="Source/AudioAnalyzer.h"/>

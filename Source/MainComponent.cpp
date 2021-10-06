@@ -189,9 +189,17 @@ void MainComponent::changeListenerCallback(ChangeBroadcaster* source)
 
 void MainComponent::loadSweep(File file)
 {
-	recorder.loadSweep(file);
-	recordingThumbnail.setThumbnailLength(recorder.getSweepLength());
-	repaint();
+	if (file.existsAsFile())
+	{
+		recorder.loadSweep(file);
+		recordingThumbnail.setThumbnailLength(recorder.getSweepLength());
+		repaint();
+	}
+	else
+	{
+		DBG("Can't find the sweep wav file");
+	}
+
 }
 
 void MainComponent::startRecording()
