@@ -41,7 +41,7 @@ public:
 		int startX = 109;
 		int startY = 55;
 		int scaleX = 1;
-		int scaleY = 1;
+		int scaleY = 100;
 		int startBin = 0;
 
 		for (int i = 0; i < fftSize; ++i)

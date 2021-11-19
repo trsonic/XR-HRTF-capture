@@ -126,6 +126,21 @@ void MainComponent::buttonClicked(Button* buttonThatWasClicked)
 			int clientSendToPort = clientTxPortLabel.getText().getIntValue();
 			int clientReceiveAtPort = clientRxPortLabel.getText().getIntValue();
 			m_oscTxRx.connectTxRx(clientIp, clientSendToPort, clientReceiveAtPort);
+
+			auto addresses = IPAddress::getAllAddresses(false);
+			String localIpAddress = "127.0.0.1";
+
+			for (auto& a : addresses)
+			{
+				if (a.toString().contains("192.168"))
+				{
+					localIpAddress = a.toString();
+				}
+			}
+			DBG(localIpAddress);
+			//m_oscTxRx.sendOscMessage("/rendererIp", (String)localIpAddress);
+			m_oscTxRx.sendOscMessage("/rendererIp", (String)"192.168.1.107");
+
 		}
 		else
 		{

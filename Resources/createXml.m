@@ -1,23 +1,23 @@
 close all
 clear
 
-% ls = getLebedevSphere(26);
-% lsxyz(:,1) = ls.x;
-% lsxyz(:,2) = ls.y;
-% lsxyz(:,3) = ls.z;
-% scatter3(ls.x,ls.y,ls.z)
+ls = getLebedevSphere(50);
+lsxyz(:,1) = ls.x;
+lsxyz(:,2) = ls.y;
+lsxyz(:,3) = ls.z;
+scatter3(ls.x,ls.y,ls.z)
 
-ls = getLebedevSphere(50); % 50, ...
-ls50leb(:,1) = ls.x;
-ls50leb(:,2) = ls.y;
-ls50leb(:,3) = ls.z;
-
-ls = getLebedevSphere(86); % 50, ...
-ls86leb(:,1) = ls.x;
-ls86leb(:,2) = ls.y;
-ls86leb(:,3) = ls.z;
-
-lsxyz = unique([ls50leb; ls86leb],'rows');
+% ls = getLebedevSphere(50); % 50, ...
+% ls50leb(:,1) = ls.x;
+% ls50leb(:,2) = ls.y;
+% ls50leb(:,3) = ls.z;
+% 
+% ls = getLebedevSphere(86); % 50, ...
+% ls86leb(:,1) = ls.x;
+% ls86leb(:,2) = ls.y;
+% ls86leb(:,3) = ls.z;
+% 
+% lsxyz = unique([ls50leb; ls86leb],'rows');
 
 
 [speakerAzEl(:,1), speakerAzEl(:,2), ~] = cart2sph(lsxyz(:,1),lsxyz(:,2),lsxyz(:,3));
@@ -34,7 +34,7 @@ speakerAzEl = [speakerAzEl(idx:end,:); speakerAzEl(1:idx-1,:)];
 headers = {'ID','spkAz','spkEl','spkDist','angAcc','angPrec','distAcc'};
 width = [45, 65, 65, 65, 65, 65, 65]; % IR-cap column width
 
-speakerDist = 2.5; % loudspeaker - head distance (m)
+speakerDist = 1.5; % loudspeaker - head distance (m)
 angAcc = 1.0; % measurement angle max deviation (accuracy) (deg)
 angPrec = 1.0; % measurement angle max deviation (precision) (deg)
 distAcc = 0.1; % distance deviation (m)
