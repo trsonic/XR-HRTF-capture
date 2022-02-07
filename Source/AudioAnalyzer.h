@@ -24,11 +24,15 @@ public:
 
 	void getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill)
 	{
-		if (bufferToFill.buffer->getNumChannels() > 0)
+		if (bufferToFill.buffer->getNumChannels() == 2)
 		{
-			auto* channelData = bufferToFill.buffer->getReadPointer(1, bufferToFill.startSample);
-			for (auto i = 0; i < bufferToFill.numSamples; ++i)
-				pushNextSampleIntoFifo(channelData[i]);
+			for (int ch = 0; ch < 2; ++ch)
+			{
+				auto* channelData = bufferToFill.buffer->getReadPointer(ch, bufferToFill.startSample);
+				for (auto i = 0; i < bufferToFill.numSamples; ++i)
+					pushNextSampleIntoFifo(ch, channelData[i]);
+			}
+
 		}
 
 		bufferToFill.clearActiveBufferRegion();
@@ -38,23 +42,35 @@ public:
 	{
 		g.fillAll(Colours::black);
 
-		int startX = 109;
-		int startY = 55;
+		int startX = 100;
+		int startY = 0;
 		int scaleX = 1;
-		int scaleY = 100;
+		int scaleY = 1;
 		int startBin = 0;
 
 		for (int i = 0; i < fftSize; ++i)
 		{
-			g.setColour(Colours::orange);
-			int j = startBin + i;
-			g.drawLine(startX + i * scaleX, startY - fftDataCopy[j] * scaleY, startX + (i + 1) * scaleX, startY - fftDataCopy[j + 1] * scaleY, 1.0f);
+			for (int ch = 0; ch < 2; ++ch)
+			{
+				if (ch == 0) g.setColour(Colours::green);
+				else g.setColour(Colours::red);
+				int j = startBin + i;
+				float v1 = juce::Decibels::gainToDecibels(fftDataCopy[ch][j]);
+				float v2 = juce::Decibels::gainToDecibels(fftDataCopy[ch][j + 1]);
+				g.drawLine(startX + i * scaleX, startY - v1 * scaleY, startX + (i + 1) * scaleX, startY - v2 * scaleY, 1.0f);
+			}
 		}
 
+		g.setFont(12.0f);
 		g.setColour(Colours::white);
-		g.drawText("Sample rate: " + String(currentSampleRate), 5, 5, 140, 15, Justification::centredLeft);
-		g.drawText("Buffer size: " + String(currentBlockSize), 5, 20, 140, 15, Justification::centredLeft);
-		g.drawText("FFT size: " + String(currentFFTSize), 5, 35, 140, 15, Justification::centredLeft);
+		g.drawText("Sample rate: " + String(currentSampleRate), 5, 3, 140, 14, Justification::centredLeft);
+		g.drawText("Buffer size: " + String(currentBlockSize), 5, 17, 140, 14, Justification::centredLeft);
+		g.drawText("FFT size: " + String(currentFFTSize), 5, 31, 140, 14, Justification::centredLeft);
+		g.setColour(Colours::green);
+		g.drawText("L: " + Decibels::toString(Decibels::gainToDecibels(peakValue[0])), 5, 45, 140, 14, Justification::centredLeft);
+		g.setColour(Colours::red);
+		g.drawText("R: " + Decibels::toString(Decibels::gainToDecibels(peakValue[1])), 80, 45, 140, 14, Justification::centredLeft);
+
 	};
 
 	void resized() override
@@ -66,8 +82,10 @@ public:
 	{
 		if (nextFFTBlockReady)
 		{
-			forwardFFT.performFrequencyOnlyForwardTransform(fftData);
-			FloatVectorOperations::copy(fftDataCopy, fftData, fftSize / 2);
+			forwardFFT.performFrequencyOnlyForwardTransform(fftData[0]);
+			forwardFFT.performFrequencyOnlyForwardTransform(fftData[1]);
+			FloatVectorOperations::copy(fftDataCopy[0], fftData[0], fftSize / 2);
+			FloatVectorOperations::copy(fftDataCopy[1], fftData[1], fftSize / 2);
 			repaint();
 			nextFFTBlockReady = false;
 		}
@@ -81,29 +99,36 @@ public:
 
 private:
 
-	void pushNextSampleIntoFifo(float sample)
+	void pushNextSampleIntoFifo(int channel, float sample)
 	{
 		// if the fifo contains enough data, set a flag to say
 		// that the next line should now be rendered..
-		if (fifoIndex == fftSize)    // [8]
+		if (fifoIndex == fftSize)
 		{
-			if (!nextFFTBlockReady) // [9]
+			if (!nextFFTBlockReady && channel == 1)
 			{
 				zeromem(fftData, sizeof(fftData));
-				memcpy(fftData, fifo, sizeof(fifo));
+				memcpy(fftData[0], fifo[0], sizeof(fifo[0]));
+				memcpy(fftData[1], fifo[1], sizeof(fifo[1]));
+				FloatVectorOperations::abs(fifo[0], fifo[0], sizeof(fifo[0]));
+				FloatVectorOperations::abs(fifo[1], fifo[1], sizeof(fifo[1]));
+				peakValue[0] = FloatVectorOperations::findMaximum(fifo[0], 1);
+				peakValue[1] = FloatVectorOperations::findMaximum(fifo[1], 1);
 				nextFFTBlockReady = true;
 			}
 			fifoIndex = 0;
 		}
-		fifo[fifoIndex++] = sample;  // [9]
+		fifo[channel][fifoIndex] = sample;
+		fifoIndex++;
 	}
 
 	juce::dsp::FFT forwardFFT;
-	float fifo[fftSize];
-	float fftData[2 * fftSize];
-	float fftDataCopy[2 * fftSize];
+	float fifo[2][fftSize];
+	float peakValue[2];
+	float fftData[2][2 * fftSize];
+	float fftDataCopy[2][2 * fftSize];
 	int fifoIndex = 0;
 	bool nextFFTBlockReady = false;
 
-	int currentSampleRate, currentBlockSize, currentFFTSize;
+	int currentSampleRate = 0, currentBlockSize = 0, currentFFTSize = 0;
 };
