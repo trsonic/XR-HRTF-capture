@@ -69,7 +69,7 @@ public:
 		g.setColour(Colours::green);
 		g.drawText("L: " + Decibels::toString(Decibels::gainToDecibels(peakValue[0])), 5, 45, 140, 14, Justification::centredLeft);
 		g.setColour(Colours::red);
-		g.drawText("R: " + Decibels::toString(Decibels::gainToDecibels(peakValue[1])), 80, 45, 140, 14, Justification::centredLeft);
+		g.drawText("R: " + Decibels::toString(Decibels::gainToDecibels(peakValue[1])), 5, 59, 140, 14, Justification::centredLeft);
 
 	};
 

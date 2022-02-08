@@ -78,6 +78,7 @@ void MeasurementLogic::paint(juce::Graphics& g)
 	g.setColour(Colours::black);
 	g.drawRect(getLocalBounds(), 1);
 
+	g.setColour(getLookAndFeel().findColour(Label::textColourId));
 	g.drawText("Current ID: " + String(m_currentMeasurement), 10, 10, 200, 15, Justification::centredLeft);
 	g.drawText("Speaker azimuth: " + m_table.getFromXML(m_currentMeasurement,"spkAz"), 10, 25, 200, 15, Justification::centredLeft);
 	g.drawText("Speaker elevation: " + m_table.getFromXML(m_currentMeasurement, "spkEl"), 10, 40, 200, 15, Justification::centredLeft);
@@ -90,10 +91,10 @@ void MeasurementLogic::resized()
 {
 	m_startStopButton.setBounds(10, 90, 60, 25);
 	m_nextMeasurementButton.setBounds(80, 90, 60, 25);
-	m_referenceMeasurementButton.setBounds(150, 90, 90, 25);
-	m_table.setBounds(5, 120, 480, 250);
-	m_logHeaderTE.setBounds(340+150, 120, 85, 250);
-	m_lastMessage.setBounds(425+150, 120, 195, 250);
+	m_referenceMeasurementButton.setBounds(10, 120, 90, 25);
+	m_table.setBounds(200, 5, 485, 250);
+	m_logHeaderTE.setBounds(680+10, 10, 85, 240);
+	m_lastMessage.setBounds(680+95, 10, 195, 240);
 }
 
 void MeasurementLogic::oscMessageReceived(const OSCMessage& message)
