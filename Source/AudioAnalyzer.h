@@ -42,10 +42,10 @@ public:
 	{
 		g.fillAll(Colours::black);
 
-		int startX = 100;
+		int startX = 85;
 		int startY = 0;
-		int scaleX = 1;
-		int scaleY = 1;
+		float scaleX = 1.6;
+		float scaleY = 1.25;
 		int startBin = 0;
 
 		for (int i = 0; i < fftSize; ++i)

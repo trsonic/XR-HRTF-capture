@@ -2,42 +2,38 @@
 
 MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 {
-	addAndMakeVisible(loadSweepButton);
-	loadSweepButton.addListener(this);
-
-    addAndMakeVisible(measureButton);
-    measureButton.onClick = [this]
-    {
-        startRecording();
-    };
-
-    addAndMakeVisible(stopButton);
-	stopButton.setEnabled(false);
-    stopButton.onClick = [this]
-    {
-        stopRecording();
-    };
-
     addAndMakeVisible(setupButton);
-    setupButton.addListener(this);
+    setupButton.onClick = [this]
+	{
+		addAndMakeVisible(m_audioSetup);
+		m_audioSetup.m_shouldBeVisible = true;
+	};
+
+
 	addAndMakeVisible(m_oscTxRx);
-	addAndMakeVisible(recordingThumbnail);
+	addAndMakeVisible(m_recordingThumbnail);
 	addAndMakeVisible(m_analyzer);
 	addAndMakeVisible(m_logic);
 	m_logic.addChangeListener(this);
 
     audioDeviceManager.initialise(2, 2, nullptr, true, {}, nullptr);
-    audioDeviceManager.addAudioCallback(&recorder);
+    audioDeviceManager.addAudioCallback(&m_recorder);
 
     setSize(1000, 700);
     loadSettings();
-	loadSweep(sweepFile);
-	recorder.addChangeListener(this);
+	m_recorder.addChangeListener(this);
+
+	// log window
+	logWindow.setMultiLine(true);
+	logWindow.setReadOnly(true);
+	logWindow.setCaretVisible(false);
+	logWindow.setScrollbarsShown(true);
+	addAndMakeVisible(logWindow);
 }
 
 MainComponent::~MainComponent()
 {
-    audioDeviceManager.removeAudioCallback(&recorder);
+    audioDeviceManager.removeAudioCallback(&m_recorder);
 	saveSettings();
 	m_oscTxRx.disconnectTxRx();
 }
@@ -47,115 +43,56 @@ void MainComponent::paint (juce::Graphics& g)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
 	g.setColour(getLookAndFeel().findColour(Label::textColourId));
-	g.drawText(sweepFile.getFullPathName(), 160, 10, 630, 25, Justification::centredLeft);
 
 }
 
 void MainComponent::resized()
 {
-	loadSweepButton.setBounds(10, 10, 140, 25);
-	setupButton.setBounds(10, 40, 140, 25);
-	m_oscTxRx.setBounds(160, 40, 360, 60);
-	measureButton.setBounds(530, 70, 140, 25);
-	stopButton.setBounds(675, 70, 140, 25);
-	m_analyzer.setBounds(10, 105, 510, 100);
-	recordingThumbnail.setBounds(530, 105, 460, 100);
+	setupButton.setBounds(10, 10, 140, 60);
+	m_oscTxRx.setBounds(160, 10, 360, 60);
+
+	m_analyzer.setBounds(10, 75, 510, 130);
+	m_recordingThumbnail.setBounds(530, 75, 460, 130);
 
 	m_logic.setBounds(10, 215, 980, 260);
+	logWindow.setBounds(10, 485, 980, 205);
 }
 
 void MainComponent::buttonClicked(Button* buttonThatWasClicked)
 {
-	if (buttonThatWasClicked == &loadSweepButton)
-	{
-		FileChooser fc("Select the sweep wav file...", sweepFile.getParentDirectory());
-
-		if (fc.browseForFileToOpen())
-		{
-			sweepFile = fc.getResult();
-			loadSweep(sweepFile);
-		}
-	}
-	else if (buttonThatWasClicked == &setupButton)
-	{
-		addAndMakeVisible(m_audioSetup);
-		m_audioSetup.m_shouldBeVisible = true;
-	}
-
-	repaint();
+	//repaint();
 }
 
 void MainComponent::changeListenerCallback(ChangeBroadcaster* source)
 {
-	if (source == &recorder)
+	// check for debug messages
+	if (source == &m_recorder)
 	{
-		if (recorder.isRecording())
+		if (m_recorder.m_currentLogMessage != "")
 		{
-			measureButton.setEnabled(false);
-			stopButton.setEnabled(true);
-		}
-		else
-		{
-			measureButton.setEnabled(true);
-			stopButton.setEnabled(false);
-
-			if (recorder.isRecordingFinished() && (m_logic.isMeasurementOn() || m_logic.isReferenceMeasurementOn()))
-			{
-				File measuredSweep = sweepFile.getParentDirectory().getChildFile(m_logic.getCurrentName());;
-				lastRecording.copyFileTo(measuredSweep);
-				if(m_logic.isMeasurementOn()) m_logic.nextMeasurement();
-			}
+			logWindowMessage += "Recorder: " + m_recorder.m_currentLogMessage;
+			m_recorder.m_currentLogMessage.clear();
 		}
 	}
-
-	if (source == &m_logic)
+	else if (source == &m_oscTxRx)
 	{
-		if (m_logic.isMeasurementOn())
+		if (m_oscTxRx.m_currentLogMessage != "")
 		{
-			if (m_logic.isOrientationLocked())
-				startRecording();
-			else
-				stopRecording();
-		}
-		else if (m_logic.isReferenceMeasurementOn())
-		{
-			stopRecording();
-			startRecording();
+			logWindowMessage += "OSCTxRX: " + m_oscTxRx.m_currentLogMessage;
+			m_oscTxRx.m_currentLogMessage.clear();
 		}
 	}
-}
-
-void MainComponent::loadSweep(File file)
-{
-	if (file.existsAsFile())
+	else if (source == &m_logic)
 	{
-		recorder.loadSweep(file);
-		recordingThumbnail.setThumbnailLength(recorder.getSweepLength());
-		repaint();
-	}
-	else
-	{
-		DBG("Can't find the sweep wav file");
+		if (m_logic.m_currentLogMessage != "")
+		{
+			logWindowMessage += "Logic: " + m_logic.m_currentLogMessage;
+			m_logic.m_currentLogMessage.clear();
+		}
 	}
 
-}
-
-void MainComponent::startRecording()
-{
-	if (!recorder.isRecording())
-	{
-		lastRecording = sweepFile.getParentDirectory().getChildFile("LR_temp_sweep.wav");
-		recorder.startRecording(lastRecording);
-	}
-}
-
-void MainComponent::stopRecording()
-{
-	if (recorder.isRecording())
-	{
-		recorder.stop();
-		lastRecording = juce::File();
-	}
+	logWindow.setText(logWindowMessage);
+	logWindow.moveCaretToEnd();
 }
 
 void MainComponent::loadSettings()
@@ -181,7 +118,7 @@ void MainComponent::loadSettings()
 
 	if (appSettings.getUserSettings()->getBoolValue("loadSettingsFile"))
 	{
-		sweepFile = File(appSettings.getUserSettings()->getValue("sweepFile"));
+		m_logic.loadSubjectFolder(File(appSettings.getUserSettings()->getValue("subjectFolder")));
 
 		// osc
 		m_oscTxRx.clientTxIpLabel.setText(appSettings.getUserSettings()->getValue("clientTxIp"), dontSendNotification);
@@ -202,7 +139,7 @@ void MainComponent::saveSettings()
 	}
 
 	// other
-	appSettings.getUserSettings()->setValue("sweepFile", sweepFile.getFullPathName());
+	appSettings.getUserSettings()->setValue("subjectFolder", m_logic.getSubjectFolder().getFullPathName());
 
 	// osc
 	appSettings.getUserSettings()->setValue("clientTxIp", m_oscTxRx.clientTxIpLabel.getText());

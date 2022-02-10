@@ -137,3 +137,9 @@ void OscTransceiver::showConnectionErrorMessage(const String& messageText)
 		messageText,
 		"OK");
 }
+
+void OscTransceiver::sendMsgToLogWindow(String message)
+{
+	m_currentLogMessage += message + "\n";
+	sendChangeMessage();  // broadcast change message to inform and update the editor
+}

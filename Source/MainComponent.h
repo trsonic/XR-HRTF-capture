@@ -12,7 +12,6 @@ class MainComponent     : public Component
                         , private ChangeListener
 {
 public:
-    
     MainComponent();
     ~MainComponent() override;
 
@@ -22,21 +21,18 @@ public:
     void changeListenerCallback(ChangeBroadcaster* source) override;
 
 private:
-    void loadSweep(File file);
-    void startRecording();
-    void stopRecording();
-
     AudioDeviceManager audioDeviceManager;
-    RecordingThumbnail recordingThumbnail;
+    RecordingThumbnail m_recordingThumbnail;
     AudioAnalyzer m_analyzer;
-    AudioRecorder recorder{ recordingThumbnail.getAudioThumbnail(), m_analyzer };
+    AudioRecorder m_recorder{ m_recordingThumbnail.getAudioThumbnail(), m_analyzer };
     AudioSetup m_audioSetup;
     OscTransceiver m_oscTxRx;
-    MeasurementLogic m_logic{m_oscTxRx};
+    MeasurementLogic m_logic{m_oscTxRx, m_recorder, m_recordingThumbnail};
 
-    TextButton loadSweepButton{"Load Sweep"}, measureButton{ "Measure" }, stopButton{ "Stop" }, setupButton{ "Audio Setup" };
+    TextButton setupButton{ "Audio Setup" };
 
-    File sweepFile, lastRecording;
+    String logWindowMessage;
+    TextEditor logWindow;
 
     // app settings
     void loadSettings();

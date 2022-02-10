@@ -1,12 +1,41 @@
 #include "MeasurementLogic.h"
 
-MeasurementLogic::MeasurementLogic(OscTransceiver& oscTxRx) : m_currentMeasurement(0)
-															, m_oscTxRx(oscTxRx)
+MeasurementLogic::MeasurementLogic(OscTransceiver& m_oscTxRx, AudioRecorder& m_recorder, RecordingThumbnail& m_thumbnail) : 
+						m_currentMeasurement(0), oscTxRx(m_oscTxRx), recorder(m_recorder), thumbnail(m_thumbnail)
 {
-	m_oscTxRx.addListener(this);
+	oscTxRx.addListener(this);
+	recorder.addChangeListener(this);
 
 	startTimerHz(60);
 	m_activationTime = Time::getMillisecondCounterHiRes();
+
+	addAndMakeVisible(m_loadSubjectFolderButton);
+	m_loadSubjectFolderButton.setEnabled(true);
+	m_loadSubjectFolderButton.onClick = [this]
+	{
+		FileChooser fc("Select the subject data folder...", subjectFolder.getParentDirectory());
+
+		if (fc.browseForDirectory())
+		{
+			loadSubjectFolder(fc.getResult());
+		}
+	};
+
+	addAndMakeVisible(m_referenceMeasurementButton);
+	m_referenceMeasurementButton.setEnabled(true);
+	m_referenceMeasurementButton.onClick = [this]
+	{
+		referenceMeasurementOn = true;
+		stopRecording();
+		startRecording();
+	};
+
+	addAndMakeVisible(m_hpeqMeasurementButton);
+	m_hpeqMeasurementButton.setEnabled(true);
+	m_hpeqMeasurementButton.onClick = [this]
+	{
+
+	};
 
 	addAndMakeVisible(m_startStopButton);
 	m_startStopButton.setToggleState(false, dontSendNotification);
@@ -17,10 +46,11 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& oscTxRx) : m_currentMeasureme
 		{
 			referenceMeasurementOn = false;
 			m_startStopButton.setButtonText("Stop");
-			m_oscTxRx.sendOscMessage("/targetVis", 1);
+			oscTxRx.sendOscMessage("/targetVis", 1);
 			nextMeasurement();
 			m_nextMeasurementButton.setEnabled(true);
 			m_referenceMeasurementButton.setEnabled(false);
+			m_hpeqMeasurementButton.setEnabled(false);
 		}
 		else
 		{
@@ -28,8 +58,9 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& oscTxRx) : m_currentMeasureme
 			m_nextMeasurementButton.setEnabled(false);
 			m_currentMeasurement = 0;
 			m_table.selectMeasurementRow(0);
-			m_oscTxRx.sendOscMessage("/targetVis", 0);
+			oscTxRx.sendOscMessage("/targetVis", 0);
 			m_referenceMeasurementButton.setEnabled(true);
+			m_hpeqMeasurementButton.setEnabled(true);
 		}
 	};
 
@@ -38,14 +69,6 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& oscTxRx) : m_currentMeasureme
 	m_nextMeasurementButton.onClick = [this]
 	{
 		nextMeasurement();
-	};
-
-	addAndMakeVisible(m_referenceMeasurementButton);
-	m_referenceMeasurementButton.setEnabled(true);
-	m_referenceMeasurementButton.onClick = [this]
-	{
-		referenceMeasurementOn = true;
-		sendChangeMessage();
 	};
 
 	addAndMakeVisible(m_table);
@@ -79,22 +102,58 @@ void MeasurementLogic::paint(juce::Graphics& g)
 	g.drawRect(getLocalBounds(), 1);
 
 	g.setColour(getLookAndFeel().findColour(Label::textColourId));
-	g.drawText("Current ID: " + String(m_currentMeasurement), 10, 10, 200, 15, Justification::centredLeft);
-	g.drawText("Speaker azimuth: " + m_table.getFromXML(m_currentMeasurement,"spkAz"), 10, 25, 200, 15, Justification::centredLeft);
-	g.drawText("Speaker elevation: " + m_table.getFromXML(m_currentMeasurement, "spkEl"), 10, 40, 200, 15, Justification::centredLeft);
-	g.drawText("Speaker distance: " + m_table.getFromXML(m_currentMeasurement, "spkDist"), 10, 55, 200, 15, Justification::centredLeft);
+	int y = 180;
+	g.drawText("Current speaker ID: " + String(m_currentMeasurement), 10, 10 + y, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker azimuth: " + m_table.getFromXML(m_currentMeasurement,"spkAz"), 10, 25 + y, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker elevation: " + m_table.getFromXML(m_currentMeasurement, "spkEl"), 10, 40 + y, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker distance: " + m_table.getFromXML(m_currentMeasurement, "spkDist"), 10, 55 + y, 200, 15, Justification::centredLeft);
 
 	//g.drawText("Number of OSC messages: " + String(oscMessageList.size()), 220, 10, 200, 15, Justification::centredLeft);
 }
 
 void MeasurementLogic::resized()
 {
-	m_startStopButton.setBounds(10, 90, 60, 25);
-	m_nextMeasurementButton.setBounds(80, 90, 60, 25);
-	m_referenceMeasurementButton.setBounds(10, 120, 90, 25);
+	m_loadSubjectFolderButton.setBounds(10, 10, 140, 25);
+
+	m_referenceMeasurementButton.setBounds(10, 90, 90, 25);
+	m_hpeqMeasurementButton.setBounds(10, 120, 90, 25);
+
+	m_startStopButton.setBounds(10, 150, 65, 25);
+	m_nextMeasurementButton.setBounds(80, 150, 65, 25);
+
 	m_table.setBounds(200, 5, 485, 250);
 	m_logHeaderTE.setBounds(680+10, 10, 85, 240);
 	m_lastMessage.setBounds(680+95, 10, 195, 240);
+}
+
+void MeasurementLogic::loadSubjectFolder(File folder)
+{
+	sendMsgToLogWindow("Loading subject folder: " + folder.getFullPathName());
+
+	// check if the sweep file exists
+	sweepFile = folder.getChildFile("sweeps/ZZ_sweep.wav");
+	if (sweepFile.existsAsFile())
+	{
+		recorder.loadSweep(sweepFile);
+		thumbnail.setThumbnailLength(recorder.getSweepLength());
+	}
+	else
+	{
+		sendMsgToLogWindow("The sweep wav file (sweeps/ZZ_sweep.wav) does not exist.");
+		//initialize
+		return;
+	}
+
+	// if folder has speaker angles xml
+
+	subjectFolder = folder;
+
+
+}
+
+File MeasurementLogic::getSubjectFolder()
+{
+	return subjectFolder;
 }
 
 void MeasurementLogic::oscMessageReceived(const OSCMessage& message)
@@ -145,13 +204,44 @@ void MeasurementLogic::timerCallback()
 	}
 
 }
+void MeasurementLogic::changeListenerCallback(ChangeBroadcaster* source)
+{
+	if (source == &recorder)
+	{
+		if (recorder.isRecordingFinished() && (isMeasurementOn() || referenceMeasurementOn))
+		{
+			File measuredSweep = sweepFile.getParentDirectory().getChildFile(getCurrentName());
+			lastRecording.copyFileTo(measuredSweep);
+			sendMsgToLogWindow("Saved last capture to: " + measuredSweep.getFullPathName());
+			if (isMeasurementOn()) nextMeasurement();
+		}
+	}
+}
+
+void MeasurementLogic::startRecording()
+{
+	if (!recorder.isRecording())
+	{
+		lastRecording = sweepFile.getParentDirectory().getChildFile("LR_temp_sweep.wav");
+		recorder.startRecording(lastRecording);
+	}
+}
+
+void MeasurementLogic::stopRecording()
+{
+	if (recorder.isRecording())
+	{
+		recorder.stop();
+		lastRecording = juce::File();
+	}
+}
 
 void MeasurementLogic::nextMeasurement()
 {
 	if (m_table.getNumRows() > m_currentMeasurement)
 	{
 		orientationLocked = false;
-		m_oscTxRx.sendOscMessage("/orientationLocked", 0);
+		oscTxRx.sendOscMessage("/orientationLocked", 0);
 		sendChangeMessage();
 		oscMessageList.clear();
 		m_currentMeasurement++;
@@ -159,7 +249,7 @@ void MeasurementLogic::nextMeasurement()
 		float speakerAz = m_table.getFromXML(m_currentMeasurement, "spkAz").getFloatValue();
 		float speakerEl = m_table.getFromXML(m_currentMeasurement, "spkEl").getFloatValue();
 		float speakerDist = m_table.getFromXML(m_currentMeasurement, "spkDist").getFloatValue();
-		m_oscTxRx.sendOscMessage("/speaker", speakerAz, speakerEl, speakerDist);
+		oscTxRx.sendOscMessage("/speaker", speakerAz, speakerEl, speakerDist);
 	}
 	else
 	{
@@ -190,10 +280,10 @@ void MeasurementLogic::analyzeOscMsgList()
 		if (angAvg <= angAccLimit)
 		{
 			orientationLocked = true;
-			m_oscTxRx.sendOscMessage("/orientationLocked", 1);
+			oscTxRx.sendOscMessage("/orientationLocked", 1);
 			oscMessageList.clear();
-			sendChangeMessage();
-			DBG("Accuracy OK to start: " + String(angAvg));
+			sendMsgToLogWindow("Accuracy OK to start: " + String(angAvg));
+			if (isMeasurementOn()) startRecording();
 		}
 	}
 	else if (orientationLocked == true)
@@ -211,9 +301,10 @@ void MeasurementLogic::analyzeOscMsgList()
 		{
 			oscMessageList.clear();
 			orientationLocked = false;
-			m_oscTxRx.sendOscMessage("/orientationLocked", 0);
+			oscTxRx.sendOscMessage("/orientationLocked", 0);
 			sendChangeMessage();
-			DBG("Not enough precision to continue:" + String(angStd));
+			sendMsgToLogWindow("Not enough precision to continue: " + String(angStd));
+			if (isMeasurementOn()) stopRecording();
 		}
 		else
 		{
@@ -252,4 +343,10 @@ String MeasurementLogic::getCurrentName()
 	}
 
 	return filename;
+}
+
+void MeasurementLogic::sendMsgToLogWindow(String message)
+{
+	m_currentLogMessage += message + "\n";
+	sendChangeMessage();  // broadcast change message to inform and update the editor
 }

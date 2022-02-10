@@ -2,9 +2,9 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class OscTransceiver : 
-						  public Component
+class OscTransceiver :    public Component
 						, public OSCReceiver
+						, public ChangeBroadcaster
 {
 public:
 	OscTransceiver();
@@ -21,6 +21,8 @@ public:
 	void sendOscMessage(const String& message, Args&& ... args);
 
 	Label clientTxIpLabel, clientTxPortLabel, clientRxPortLabel;
+	
+	String m_currentLogMessage;
 private:
 	
 	OSCSender sender;
@@ -29,7 +31,7 @@ private:
 
 	TextButton connectOscButton;
 
-
+	void sendMsgToLogWindow(String message);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscTransceiver)
 };

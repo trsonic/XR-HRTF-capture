@@ -23,12 +23,19 @@ public:
     {
         if (file.existsAsFile())
         {
+            sendMsgToLogWindow("Loading sweep file: " + file.getFullPathName());
             juce::AudioFormatManager afm;
             afm.registerBasicFormats();
             std::unique_ptr<juce::AudioFormatReader> reader(afm.createReaderFor(file));
             sweepBuffer.setSize((int)reader->numChannels, (int)reader->lengthInSamples);
             reader->read(&sweepBuffer, 0, (int)reader->lengthInSamples, 0, true, true);
             sweepLength = (float)((int)reader->lengthInSamples / (int)reader->sampleRate);
+            sendMsgToLogWindow("Sweep file loaded: "
+                + String((int)reader->numChannels) + " ch, "
+                + String(sweepLength) + " s, "
+                + String((int)reader->lengthInSamples) + " samples, "
+                + String((int)reader->sampleRate) + " Hz");
+            return true;
         }
         else
         {
@@ -155,6 +162,8 @@ public:
         }
     }
 
+    String m_currentLogMessage;
+
 private:
     juce::AudioThumbnail& thumbnail;
     AudioAnalyzer& analyzer;
@@ -170,4 +179,10 @@ private:
 
     juce::CriticalSection writerLock;
     std::atomic<juce::AudioFormatWriter::ThreadedWriter*> activeWriter{ nullptr };
+
+    void sendMsgToLogWindow(String message)
+    {
+        m_currentLogMessage += message + "\n";
+        sendChangeMessage();  // broadcast change message to inform and update the editor
+    }
 };
