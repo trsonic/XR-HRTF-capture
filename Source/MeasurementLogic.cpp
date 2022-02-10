@@ -1,7 +1,7 @@
 #include "MeasurementLogic.h"
 
 MeasurementLogic::MeasurementLogic(OscTransceiver& m_oscTxRx, AudioRecorder& m_recorder, RecordingThumbnail& m_thumbnail) : 
-						m_currentMeasurement(0), oscTxRx(m_oscTxRx), recorder(m_recorder), thumbnail(m_thumbnail)
+	currentMeasurementIndex(0), currentMeasurementType(none), oscTxRx(m_oscTxRx), recorder(m_recorder), thumbnail(m_thumbnail)
 {
 	oscTxRx.addListener(this);
 	recorder.addChangeListener(this);
@@ -22,19 +22,25 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& m_oscTxRx, AudioRecorder& m_r
 	};
 
 	addAndMakeVisible(m_referenceMeasurementButton);
-	m_referenceMeasurementButton.setEnabled(true);
+	m_referenceMeasurementButton.setToggleState(false, dontSendNotification);
+	m_referenceMeasurementButton.setClickingTogglesState(true);
 	m_referenceMeasurementButton.onClick = [this]
 	{
-		referenceMeasurementOn = true;
-		stopRecording();
-		startRecording();
+		if (m_referenceMeasurementButton.getToggleState())
+			switchMeasurementType(reference);
+		else
+			switchMeasurementType(none);
 	};
 
 	addAndMakeVisible(m_hpeqMeasurementButton);
-	m_hpeqMeasurementButton.setEnabled(true);
+	m_hpeqMeasurementButton.setToggleState(false, dontSendNotification);
+	m_hpeqMeasurementButton.setClickingTogglesState(true);
 	m_hpeqMeasurementButton.onClick = [this]
 	{
-
+		if (m_hpeqMeasurementButton.getToggleState())
+			switchMeasurementType(hpeq);
+		else
+			switchMeasurementType(none);
 	};
 
 	addAndMakeVisible(m_startStopButton);
@@ -43,25 +49,9 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& m_oscTxRx, AudioRecorder& m_r
 	m_startStopButton.onClick = [this]
 	{
 		if (m_startStopButton.getToggleState())
-		{
-			referenceMeasurementOn = false;
-			m_startStopButton.setButtonText("Stop");
-			oscTxRx.sendOscMessage("/targetVis", 1);
-			nextMeasurement();
-			m_nextMeasurementButton.setEnabled(true);
-			m_referenceMeasurementButton.setEnabled(false);
-			m_hpeqMeasurementButton.setEnabled(false);
-		}
+			switchMeasurementType(hrir);
 		else
-		{
-			m_startStopButton.setButtonText("Start");
-			m_nextMeasurementButton.setEnabled(false);
-			m_currentMeasurement = 0;
-			m_table.selectMeasurementRow(0);
-			oscTxRx.sendOscMessage("/targetVis", 0);
-			m_referenceMeasurementButton.setEnabled(true);
-			m_hpeqMeasurementButton.setEnabled(true);
-		}
+			switchMeasurementType(none);
 	};
 
 	addAndMakeVisible(m_nextMeasurementButton);
@@ -87,6 +77,8 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& m_oscTxRx, AudioRecorder& m_r
 	m_logHeaderTE.setScrollbarsShown(false);
 	m_logHeaderTE.setText(m_logHeader.replace(",", "\n"), dontSendNotification);
 	addAndMakeVisible(m_logHeaderTE);
+
+	switchMeasurementType(none);
 }
 
 MeasurementLogic::~MeasurementLogic()
@@ -103,10 +95,10 @@ void MeasurementLogic::paint(juce::Graphics& g)
 
 	g.setColour(getLookAndFeel().findColour(Label::textColourId));
 	int y = 180;
-	g.drawText("Current speaker ID: " + String(m_currentMeasurement), 10, 10 + y, 200, 15, Justification::centredLeft);
-	g.drawText("Speaker azimuth: " + m_table.getFromXML(m_currentMeasurement,"spkAz"), 10, 25 + y, 200, 15, Justification::centredLeft);
-	g.drawText("Speaker elevation: " + m_table.getFromXML(m_currentMeasurement, "spkEl"), 10, 40 + y, 200, 15, Justification::centredLeft);
-	g.drawText("Speaker distance: " + m_table.getFromXML(m_currentMeasurement, "spkDist"), 10, 55 + y, 200, 15, Justification::centredLeft);
+	g.drawText("Current speaker ID: " + String(currentMeasurementIndex), 10, 10 + y, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker azimuth: " + m_table.getFromXML(currentMeasurementIndex,"spkAz"), 10, 25 + y, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker elevation: " + m_table.getFromXML(currentMeasurementIndex, "spkEl"), 10, 40 + y, 200, 15, Justification::centredLeft);
+	g.drawText("Speaker distance: " + m_table.getFromXML(currentMeasurementIndex, "spkDist"), 10, 55 + y, 200, 15, Justification::centredLeft);
 
 	//g.drawText("Number of OSC messages: " + String(oscMessageList.size()), 220, 10, 200, 15, Justification::centredLeft);
 }
@@ -118,8 +110,8 @@ void MeasurementLogic::resized()
 	m_referenceMeasurementButton.setBounds(10, 90, 90, 25);
 	m_hpeqMeasurementButton.setBounds(10, 120, 90, 25);
 
-	m_startStopButton.setBounds(10, 150, 65, 25);
-	m_nextMeasurementButton.setBounds(80, 150, 65, 25);
+	m_startStopButton.setBounds(10, 150, 90, 25);
+	m_nextMeasurementButton.setBounds(105, 150, 65, 25);
 
 	m_table.setBounds(200, 5, 485, 250);
 	m_logHeaderTE.setBounds(680+10, 10, 85, 240);
@@ -129,6 +121,13 @@ void MeasurementLogic::resized()
 void MeasurementLogic::loadSubjectFolder(File folder)
 {
 	sendMsgToLogWindow("Loading subject folder: " + folder.getFullPathName());
+
+	// check if the subject folder exists
+	if (!folder.exists())
+	{
+		sendMsgToLogWindow("The subject folder does not exist.");
+		return;
+	}
 
 	// check if the sweep file exists
 	sweepFile = folder.getChildFile("sweeps/ZZ_sweep.wav");
@@ -144,11 +143,9 @@ void MeasurementLogic::loadSubjectFolder(File folder)
 		return;
 	}
 
-	// if folder has speaker angles xml
-
+	// check if folder has speaker angles xml (not implemented yet)
+	
 	subjectFolder = folder;
-
-
 }
 
 File MeasurementLogic::getSubjectFolder()
@@ -208,13 +205,66 @@ void MeasurementLogic::changeListenerCallback(ChangeBroadcaster* source)
 {
 	if (source == &recorder)
 	{
-		if (recorder.isRecordingFinished() && (isMeasurementOn() || referenceMeasurementOn))
+		if (recorder.recordingFinished && currentMeasurementType != none)
 		{
 			File measuredSweep = sweepFile.getParentDirectory().getChildFile(getCurrentName());
 			lastRecording.copyFileTo(measuredSweep);
-			sendMsgToLogWindow("Saved last capture to: " + measuredSweep.getFullPathName());
-			if (isMeasurementOn()) nextMeasurement();
+			recorder.recordingFinished = false;
+			sendMsgToLogWindow("Last capture saved to: " + measuredSweep.getFullPathName());
+			if (currentMeasurementType == hrir) nextMeasurement();
+			else switchMeasurementType(none);
 		}
+	}
+}
+
+void MeasurementLogic::switchMeasurementType(mTypes newType)
+{
+	currentMeasurementType = newType;
+
+	if (currentMeasurementType == reference)
+	{
+		startRecording();
+		m_referenceMeasurementButton.setButtonText("Stop");
+		m_hpeqMeasurementButton.setEnabled(false);
+		m_startStopButton.setEnabled(false);
+	}
+	else if (currentMeasurementType == hpeq)
+	{
+		startRecording();
+		m_hpeqMeasurementButton.setButtonText("Stop");
+		m_referenceMeasurementButton.setEnabled(false);
+		m_startStopButton.setEnabled(false);
+
+	}
+	else if (currentMeasurementType == hrir)
+	{
+		m_referenceMeasurementButton.setEnabled(false);
+		m_hpeqMeasurementButton.setEnabled(false);
+		nextMeasurement();
+		oscTxRx.sendOscMessage("/targetVis", 1);
+
+		m_startStopButton.setButtonText("Stop");
+		m_nextMeasurementButton.setEnabled(true);
+	}
+	else if (currentMeasurementType == none)
+	{
+		stopRecording();
+		currentMeasurementIndex = 0;
+		m_table.selectMeasurementRow(0);
+		oscTxRx.sendOscMessage("/targetVis", 0);
+
+		m_referenceMeasurementButton.setButtonText("Reference");
+		m_referenceMeasurementButton.setToggleState(false, dontSendNotification);
+		m_referenceMeasurementButton.setEnabled(true);
+
+		m_hpeqMeasurementButton.setButtonText("HP EQ");
+		m_hpeqMeasurementButton.setToggleState(false, dontSendNotification);
+		m_hpeqMeasurementButton.setEnabled(true);
+
+		m_startStopButton.setButtonText("HRIRs");
+		m_startStopButton.setToggleState(false, dontSendNotification);
+		m_startStopButton.setEnabled(true);
+		m_nextMeasurementButton.setEnabled(false);
 	}
 }
 
@@ -238,22 +288,21 @@ void MeasurementLogic::stopRecording()
 
 void MeasurementLogic::nextMeasurement()
 {
-	if (m_table.getNumRows() > m_currentMeasurement)
+	if (m_table.getNumRows() > currentMeasurementIndex)
 	{
 		orientationLocked = false;
 		oscTxRx.sendOscMessage("/orientationLocked", 0);
-		sendChangeMessage();
 		oscMessageList.clear();
-		m_currentMeasurement++;
-		m_table.selectMeasurementRow(m_currentMeasurement);
-		float speakerAz = m_table.getFromXML(m_currentMeasurement, "spkAz").getFloatValue();
-		float speakerEl = m_table.getFromXML(m_currentMeasurement, "spkEl").getFloatValue();
-		float speakerDist = m_table.getFromXML(m_currentMeasurement, "spkDist").getFloatValue();
+		currentMeasurementIndex++;
+		m_table.selectMeasurementRow(currentMeasurementIndex);
+		float speakerAz = m_table.getFromXML(currentMeasurementIndex, "spkAz").getFloatValue();
+		float speakerEl = m_table.getFromXML(currentMeasurementIndex, "spkEl").getFloatValue();
+		float speakerDist = m_table.getFromXML(currentMeasurementIndex, "spkDist").getFloatValue();
 		oscTxRx.sendOscMessage("/speaker", speakerAz, speakerEl, speakerDist);
 	}
 	else
 	{
-		m_startStopButton.setToggleState(false, sendNotification);
+		switchMeasurementType(none);
 	}
 
 	repaint();
@@ -263,8 +312,8 @@ void MeasurementLogic::analyzeOscMsgList()
 {
 	int msgHistorySize = 60; // number of messages that is required to start calculating avg angle for orientation lock
 	int listSize = oscMessageList.size();
-	float angAccLimit = m_table.getFromXML(m_currentMeasurement, "angAcc").getFloatValue(); // accuracy condition to start the measurement
-	float angPrecLimit = m_table.getFromXML(m_currentMeasurement, "angPrec").getFloatValue(); // precision condition to complete the measurement
+	float angAccLimit = m_table.getFromXML(currentMeasurementIndex, "angAcc").getFloatValue(); // accuracy condition to start the measurement
+	float angPrecLimit = m_table.getFromXML(currentMeasurementIndex, "angPrec").getFloatValue(); // precision condition to complete the measurement
 
 	if (listSize >= msgHistorySize && orientationLocked == false)
 	{
@@ -283,7 +332,7 @@ void MeasurementLogic::analyzeOscMsgList()
 			oscTxRx.sendOscMessage("/orientationLocked", 1);
 			oscMessageList.clear();
 			sendMsgToLogWindow("Accuracy OK to start: " + String(angAvg));
-			if (isMeasurementOn()) startRecording();
+			if (currentMeasurementType == hrir) startRecording();
 		}
 	}
 	else if (orientationLocked == true)
@@ -302,9 +351,8 @@ void MeasurementLogic::analyzeOscMsgList()
 			oscMessageList.clear();
 			orientationLocked = false;
 			oscTxRx.sendOscMessage("/orientationLocked", 0);
-			sendChangeMessage();
 			sendMsgToLogWindow("Not enough precision to continue: " + String(angStd));
-			if (isMeasurementOn()) stopRecording();
+			if (currentMeasurementType == hrir) stopRecording();
 		}
 		else
 		{
@@ -329,15 +377,19 @@ String MeasurementLogic::getCurrentName()
 {
 	String filename;
 
-	if (referenceMeasurementOn)
+	if (currentMeasurementType == reference)
 	{
 		filename += "00_reference.wav";
 	}
-	else
+	else if (currentMeasurementType == hpeq)
 	{
-		filename += String(m_table.getFromXML(m_currentMeasurement, "ID").getTrailingIntValue()).paddedLeft('0', 2);
-		filename += "_azi_" + m_table.getFromXML(m_currentMeasurement, "spkAz");
-		filename += "_ele_" + m_table.getFromXML(m_currentMeasurement, "spkEl");
+		filename += "00_hpeq.wav";
+	}
+	else if(currentMeasurementType == hrir)
+	{
+		filename += String(m_table.getFromXML(currentMeasurementIndex, "ID").getTrailingIntValue()).paddedLeft('0', 2);
+		filename += "_azi_" + m_table.getFromXML(currentMeasurementIndex, "spkAz");
+		filename += "_ele_" + m_table.getFromXML(currentMeasurementIndex, "spkEl");
 		filename += "_dist_" + String(meanDist,2);
 		filename += ".wav";
 	}

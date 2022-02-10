@@ -39,6 +39,12 @@ private:
 template <typename... Args>
 void OscTransceiver::sendOscMessage(const String& message, Args&& ... args)
 {
+	if (!isSenderConnected)
+	{
+		sendMsgToLogWindow("Sender not connected");
+		return;
+	}
+
 	if (!sender.send(message, std::forward<Args>(args)...))
 		showConnectionErrorMessage("Error: could not send OSC message.");
 }

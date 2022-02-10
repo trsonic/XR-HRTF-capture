@@ -9,7 +9,6 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 		m_audioSetup.m_shouldBeVisible = true;
 	};
 
-
 	addAndMakeVisible(m_oscTxRx);
 	addAndMakeVisible(m_recordingThumbnail);
 	addAndMakeVisible(m_analyzer);

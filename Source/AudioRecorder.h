@@ -97,11 +97,6 @@ public:
         return activeWriter.load() != nullptr;
     }
 
-    bool isRecordingFinished() const
-    {
-        return recordingFinished;
-    }
-
     void audioDeviceAboutToStart(juce::AudioIODevice* device) override
     {
         sampleRate = device->getCurrentSampleRate();
@@ -164,6 +159,8 @@ public:
 
     String m_currentLogMessage;
 
+    bool recordingFinished = false;
+
 private:
     juce::AudioThumbnail& thumbnail;
     AudioAnalyzer& analyzer;
@@ -175,7 +172,6 @@ private:
     juce::AudioSampleBuffer sweepBuffer;
     float sweepLength = 0.0;
     int sweepPosition = 0;
-    bool recordingFinished = true;
 
     juce::CriticalSection writerLock;
     std::atomic<juce::AudioFormatWriter::ThreadedWriter*> activeWriter{ nullptr };

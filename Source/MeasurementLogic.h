@@ -24,11 +24,6 @@ public:
 	void nextMeasurement();
 	String getCurrentName();
 
-	bool isMeasurementOn()
-	{
-		return m_startStopButton.getToggleState();
-	}
-
 	String m_currentLogMessage;
 
 	void loadSubjectFolder(File folder);
@@ -37,6 +32,12 @@ private:
 	OscTransceiver& oscTxRx;
 	AudioRecorder& recorder;
 	RecordingThumbnail& thumbnail;
+
+	enum mTypes {none, reference, hpeq, hrir};
+
+	mTypes currentMeasurementType;
+
+	void switchMeasurementType(mTypes newtype);
 
 	void startRecording();
 	void stopRecording();
@@ -56,11 +57,11 @@ private:
 	bool orientationLocked = false;
 	bool referenceMeasurementOn = false;
 
-	int m_currentMeasurement;
+	int currentMeasurementIndex;
 	TextButton	m_loadSubjectFolderButton{ "Load Subject Folder" }
-			, m_referenceMeasurementButton{ "Reference" }
-			, m_hpeqMeasurementButton{ "HP EQ" }
-			, m_startStopButton{ "Start" }
+			, m_referenceMeasurementButton
+			, m_hpeqMeasurementButton
+			, m_startStopButton
 			, m_nextMeasurementButton{ "Next" };
 
 
