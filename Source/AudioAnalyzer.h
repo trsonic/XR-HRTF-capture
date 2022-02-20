@@ -6,6 +6,7 @@ class AudioAnalyzer : public Component
 {
 public:
 	AudioAnalyzer() : forwardFFT(fftOrder)
+					, window(fftSize, juce::dsp::WindowingFunction<float>::hamming)
 	{
 		startTimerHz(40);
 	};
@@ -82,6 +83,8 @@ public:
 	{
 		if (nextFFTBlockReady)
 		{
+			window.multiplyWithWindowingTable(fftData[0], fftSize);
+			window.multiplyWithWindowingTable(fftData[1], fftSize);
 			forwardFFT.performFrequencyOnlyForwardTransform(fftData[0]);
 			forwardFFT.performFrequencyOnlyForwardTransform(fftData[1]);
 			FloatVectorOperations::copy(fftDataCopy[0], fftData[0], fftSize / 2);
@@ -123,6 +126,8 @@ private:
 	}
 
 	juce::dsp::FFT forwardFFT;
+	juce::dsp::WindowingFunction<float> window;
+
 	float fifo[2][fftSize];
 	float peakValue[2];
 	float fftData[2][2 * fftSize];
