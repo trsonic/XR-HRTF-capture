@@ -10,6 +10,7 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 	};
 
 	addAndMakeVisible(m_oscTxRx);
+	m_oscTxRx.addChangeListener(this);
 	addAndMakeVisible(m_recordingThumbnail);
 	addAndMakeVisible(m_analyzer);
 	addAndMakeVisible(m_logic);

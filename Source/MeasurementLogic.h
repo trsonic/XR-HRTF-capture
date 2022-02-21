@@ -36,6 +36,8 @@ private:
 	enum mTypes {none, reference, hpeq, hrir};
 
 	mTypes currentMeasurementType;
+	int referenceMeasurementCount = 0;
+	int hpMeasurementCount = 0;
 
 	void switchMeasurementType(mTypes newtype);
 
@@ -48,7 +50,7 @@ private:
 
 	void sendMsgToLogWindow(String message);
 	File subjectFolder;
-	File sweepFile, lastRecording;
+	File lsSweepFile, hpSweepFile, lastRecording;
 
 	double m_activationTime = 0.0f;
 	StringArray oscMessageList;
@@ -60,7 +62,9 @@ private:
 	int currentMeasurementIndex;
 	TextButton	m_loadSubjectFolderButton{ "Load Subject Folder" }
 			, m_referenceMeasurementButton
+			, m_refCountResetButton{ "Reset" }
 			, m_hpeqMeasurementButton
+		    , m_hpeqCountResetButton{ "Reset" }
 			, m_startStopButton
 			, m_nextMeasurementButton{ "Next" };
 

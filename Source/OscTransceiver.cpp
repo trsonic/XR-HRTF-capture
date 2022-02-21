@@ -40,9 +40,9 @@ OscTransceiver::OscTransceiver()
 					localIpAddress = a.toString();
 				}
 			}
-			DBG(localIpAddress);
-			//m_oscTxRx.sendOscMessage("/rendererIp", (String)localIpAddress);
-			sendOscMessage("/rendererIp", (String)"192.168.1.107");
+			sendMsgToLogWindow("Local IP: " + localIpAddress);
+			sendOscMessage("/rendererIp", (String)localIpAddress);
+			//sendOscMessage("/rendererIp", (String)"192.168.1.107");
 
 		}
 		else
@@ -61,9 +61,9 @@ OscTransceiver::OscTransceiver()
 			connectOscButton.setButtonText("Connect OSC");
 		}
 	};
-	addAndMakeVisible(&connectOscButton);
 
-	connectOscButton.triggerClick(); // connect OSC on startup
+	addAndMakeVisible(&connectOscButton);
+	//connectOscButton.triggerClick(); // connect OSC on startup
 }
 
 OscTransceiver::~OscTransceiver()

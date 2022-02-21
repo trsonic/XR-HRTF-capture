@@ -32,6 +32,13 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& m_oscTxRx, AudioRecorder& m_r
 			switchMeasurementType(none);
 	};
 
+	addAndMakeVisible(m_refCountResetButton);
+	m_refCountResetButton.onClick = [this]
+	{
+		referenceMeasurementCount = 0;
+		repaint();
+	};
+
 	addAndMakeVisible(m_hpeqMeasurementButton);
 	m_hpeqMeasurementButton.setToggleState(false, dontSendNotification);
 	m_hpeqMeasurementButton.setClickingTogglesState(true);
@@ -41,6 +48,13 @@ MeasurementLogic::MeasurementLogic(OscTransceiver& m_oscTxRx, AudioRecorder& m_r
 			switchMeasurementType(hpeq);
 		else
 			switchMeasurementType(none);
+	};
+
+	addAndMakeVisible(m_hpeqCountResetButton);
+	m_hpeqCountResetButton.onClick = [this]
+	{
+		hpMeasurementCount = 0;
+		repaint();
 	};
 
 	addAndMakeVisible(m_startStopButton);
@@ -94,6 +108,10 @@ void MeasurementLogic::paint(juce::Graphics& g)
 	g.drawRect(getLocalBounds(), 1);
 
 	g.setColour(getLookAndFeel().findColour(Label::textColourId));
+
+	g.drawText("N: " + String(referenceMeasurementCount), 170, 90, 90, 25, Justification::centredLeft);
+	g.drawText("N: " + String(hpMeasurementCount), 170, 120, 90, 25, Justification::centredLeft);
+
 	int y = 180;
 	g.drawText("Current speaker ID: " + String(currentMeasurementIndex), 10, 10 + y, 200, 15, Justification::centredLeft);
 	g.drawText("Speaker azimuth: " + m_table.getFromXML(currentMeasurementIndex,"spkAz"), 10, 25 + y, 200, 15, Justification::centredLeft);
@@ -105,13 +123,15 @@ void MeasurementLogic::paint(juce::Graphics& g)
 
 void MeasurementLogic::resized()
 {
-	m_loadSubjectFolderButton.setBounds(10, 10, 140, 25);
+	m_loadSubjectFolderButton.setBounds(10, 10, 155, 25);
 
 	m_referenceMeasurementButton.setBounds(10, 90, 90, 25);
 	m_hpeqMeasurementButton.setBounds(10, 120, 90, 25);
+	m_refCountResetButton.setBounds(105, 90, 60, 25);
+	m_hpeqCountResetButton.setBounds(105, 120, 60, 25);
 
 	m_startStopButton.setBounds(10, 150, 90, 25);
-	m_nextMeasurementButton.setBounds(105, 150, 65, 25);
+	m_nextMeasurementButton.setBounds(105, 150, 60, 25);
 
 	m_table.setBounds(200, 5, 485, 250);
 	m_logHeaderTE.setBounds(680+10, 10, 85, 240);
@@ -120,6 +140,14 @@ void MeasurementLogic::resized()
 
 void MeasurementLogic::loadSubjectFolder(File folder)
 {
+	// initialize
+	currentMeasurementIndex = 0;
+	currentMeasurementType = none;
+	referenceMeasurementCount = 0;
+	hpMeasurementCount = 0;
+	repaint();
+
+
 	sendMsgToLogWindow("Loading subject folder: " + folder.getFullPathName());
 
 	// check if the subject folder exists
@@ -129,17 +157,19 @@ void MeasurementLogic::loadSubjectFolder(File folder)
 		return;
 	}
 
-	// check if the sweep file exists
-	sweepFile = folder.getChildFile("sweeps/ZZ_sweep.wav");
-	if (sweepFile.existsAsFile())
+	// check if the LS sweep file exists
+	lsSweepFile = folder.getChildFile("sweeps/LS_sweep.wav");
+	if (!lsSweepFile.existsAsFile())
 	{
-		recorder.loadSweep(sweepFile);
-		thumbnail.setThumbnailLength(recorder.getSweepLength());
+		sendMsgToLogWindow("The sweep wav file (sweeps/LS_sweep.wav) does not exist.");
+		return;
 	}
-	else
+
+	// check if the HP sweep file exists
+	hpSweepFile = folder.getChildFile("sweeps/HP_sweep.wav");
+	if (!lsSweepFile.existsAsFile())
 	{
-		sendMsgToLogWindow("The sweep wav file (sweeps/ZZ_sweep.wav) does not exist.");
-		//initialize
+		sendMsgToLogWindow("The sweep wav file (sweeps/HP_sweep.wav) does not exist.");
 		return;
 	}
 
@@ -207,12 +237,15 @@ void MeasurementLogic::changeListenerCallback(ChangeBroadcaster* source)
 	{
 		if (recorder.recordingFinished && currentMeasurementType != none)
 		{
-			File measuredSweep = sweepFile.getParentDirectory().getChildFile(getCurrentName());
+			if (currentMeasurementType == reference) referenceMeasurementCount++;
+			else if (currentMeasurementType == hpeq) hpMeasurementCount++;
+			File measuredSweep = lsSweepFile.getParentDirectory().getChildFile(getCurrentName());
 			lastRecording.copyFileTo(measuredSweep);
 			recorder.recordingFinished = false;
 			sendMsgToLogWindow("Last capture saved to: " + measuredSweep.getFullPathName());
 			if (currentMeasurementType == hrir) nextMeasurement();
 			else switchMeasurementType(none);
+			repaint();
 		}
 	}
 }
@@ -223,21 +256,33 @@ void MeasurementLogic::switchMeasurementType(mTypes newType)
 
 	if (currentMeasurementType == reference)
 	{
+		recorder.loadSweep(lsSweepFile);
+		thumbnail.setThumbnailLength(recorder.getSweepLength());
+
 		startRecording();
 		m_referenceMeasurementButton.setButtonText("Stop");
 		m_hpeqMeasurementButton.setEnabled(false);
 		m_startStopButton.setEnabled(false);
+		m_refCountResetButton.setEnabled(false);
+		m_hpeqCountResetButton.setEnabled(false);
 	}
 	else if (currentMeasurementType == hpeq)
 	{
+		recorder.loadSweep(hpSweepFile);
+		thumbnail.setThumbnailLength(recorder.getSweepLength());
+
 		startRecording();
 		m_hpeqMeasurementButton.setButtonText("Stop");
 		m_referenceMeasurementButton.setEnabled(false);
 		m_startStopButton.setEnabled(false);
-
+		m_refCountResetButton.setEnabled(false);
+		m_hpeqCountResetButton.setEnabled(false);
 	}
 	else if (currentMeasurementType == hrir)
 	{
+		recorder.loadSweep(lsSweepFile);
+		thumbnail.setThumbnailLength(recorder.getSweepLength());
+
 		m_referenceMeasurementButton.setEnabled(false);
 		m_hpeqMeasurementButton.setEnabled(false);
 		nextMeasurement();
@@ -245,6 +290,8 @@ void MeasurementLogic::switchMeasurementType(mTypes newType)
 
 		m_startStopButton.setButtonText("Stop");
 		m_nextMeasurementButton.setEnabled(true);
+		m_refCountResetButton.setEnabled(false);
+		m_hpeqCountResetButton.setEnabled(false);
 	}
 	else if (currentMeasurementType == none)
 	{
@@ -265,6 +312,8 @@ void MeasurementLogic::switchMeasurementType(mTypes newType)
 		m_startStopButton.setToggleState(false, dontSendNotification);
 		m_startStopButton.setEnabled(true);
 		m_nextMeasurementButton.setEnabled(false);
+		m_refCountResetButton.setEnabled(true);
+		m_hpeqCountResetButton.setEnabled(true);
 	}
 }
 
@@ -272,7 +321,7 @@ void MeasurementLogic::startRecording()
 {
 	if (!recorder.isRecording())
 	{
-		lastRecording = sweepFile.getParentDirectory().getChildFile("LR_temp_sweep.wav");
+		lastRecording = lsSweepFile.getParentDirectory().getChildFile("LR_temp_sweep.wav");
 		recorder.startRecording(lastRecording);
 	}
 }
@@ -379,11 +428,11 @@ String MeasurementLogic::getCurrentName()
 
 	if (currentMeasurementType == reference)
 	{
-		filename += "00_reference.wav";
+		filename += "00_reference_" + String(referenceMeasurementCount).paddedLeft('0', 2) + ".wav";
 	}
 	else if (currentMeasurementType == hpeq)
 	{
-		filename += "00_hpeq.wav";
+		filename += "00_hptf_" + String(hpMeasurementCount).paddedLeft('0', 2) + ".wav";
 	}
 	else if(currentMeasurementType == hrir)
 	{
