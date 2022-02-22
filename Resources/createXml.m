@@ -31,13 +31,12 @@ speakerAzEl = sortrows(speakerAzEl, [1 2]);
 idx = find(speakerAzEl(:,1) == 0,1,'first');
 speakerAzEl = [speakerAzEl(idx:end,:); speakerAzEl(1:idx-1,:)];
 
-headers = {'ID','spkAz','spkEl','spkDist','angAcc','angPrec','distAcc'};
-width = [45, 65, 65, 65, 65, 65, 65]; % IR-cap column width
+headers = {'ID','spkAz','spkEl','spkDist','angErrLim','distErrLim'};
+width = [45, 65, 65, 65, 75, 75]; % IR-cap column width
 
 speakerDist = 1.5; % loudspeaker - head distance (m)
-angAcc = 1.0; % measurement angle max deviation (accuracy) (deg)
-angPrec = 1.0; % measurement angle max deviation (precision) (deg)
-distAcc = 0.1; % distance deviation (m)
+angErrLim = 1.0; % measurement angle max deviation (deg)
+distErrLim = 0.3; % measurement distance max deviation (m)
 
 %% SAVE CONFIG FILE
 fileID = fopen('speaker_angles.xml', 'w');
@@ -54,9 +53,8 @@ for i = 1:length(speakerAzEl)
     params = [params ' ' sprintf('%s="%.2f"', string(headers(2)), speakerAzEl(i,1))];
     params = [params ' ' sprintf('%s="%.2f"', string(headers(3)), speakerAzEl(i,2))];
     params = [params ' ' sprintf('%s="%.2f"', string(headers(4)), speakerDist)];
-    params = [params ' ' sprintf('%s="%.2f"', string(headers(5)), angAcc)];
-    params = [params ' ' sprintf('%s="%.2f"', string(headers(6)), angPrec)];
-    params = [params ' ' sprintf('%s="%.2f"', string(headers(7)), distAcc)];
+    params = [params ' ' sprintf('%s="%.2f"', string(headers(5)), angErrLim)];
+    params = [params ' ' sprintf('%s="%.2f"', string(headers(6)), distErrLim)];
     fprintf(fileID,['        <ITEM ' params '/>\n']);
 end
 fprintf(fileID,'    </DATA>\n');

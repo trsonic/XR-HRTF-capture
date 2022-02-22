@@ -361,63 +361,79 @@ void MeasurementLogic::analyzeOscMsgList()
 {
 	int msgHistorySize = 60; // number of messages that is required to start calculating avg angle for orientation lock
 	int listSize = oscMessageList.size();
-	float angAccLimit = m_table.getFromXML(currentMeasurementIndex, "angAcc").getFloatValue(); // accuracy condition to start the measurement
-	float angPrecLimit = m_table.getFromXML(currentMeasurementIndex, "angPrec").getFloatValue(); // precision condition to complete the measurement
+	float angErrLimit = m_table.getFromXML(currentMeasurementIndex, "angErrLim").getFloatValue(); // angular error limit
+	float distErrLimit = m_table.getFromXML(currentMeasurementIndex, "distErrLim").getFloatValue(); // distance error limit
 
 	if (listSize >= msgHistorySize && orientationLocked == false)
 	{
-		StatisticsAccumulator<float> angAcc;
+		StatisticsAccumulator<float> angAcc, distAcc;
 		for (int i = 0; i < msgHistorySize; ++i)
 		{
 			StringArray msg;
 			msg.addTokens(oscMessageList[listSize - msgHistorySize + i], ",", "\"");
 			angAcc.addValue(msg[6].getFloatValue());
+			distAcc.addValue(msg[8].getFloatValue());
 		}
-		float angAvg = angAcc.getAverage();
+		float maxAngle = angAcc.getMaxValue();
+		float maxDist = distAcc.getMaxValue();
 
-		if (angAvg <= angAccLimit)
+		if (maxAngle <= angErrLimit && maxDist <= distErrLimit)
 		{
 			orientationLocked = true;
 			oscTxRx.sendOscMessage("/orientationLocked", 1);
 			oscMessageList.clear();
-			sendMsgToLogWindow("Accuracy OK to start: " + String(angAvg));
+			sendMsgToLogWindow("Accuracy OK to start. Max angular error: " + String(maxAngle) + " deg, max distance error: " + String(maxDist) + " m");
 			if (currentMeasurementType == hrir) startRecording();
 		}
 	}
 	else if (orientationLocked == true)
 	{
-		StatisticsAccumulator<float> angAcc;
+		StatisticsAccumulator<float> angAcc, distAcc;
 		for (int i = 0; i < listSize; ++i)
 		{
 			StringArray msg;
 			msg.addTokens(oscMessageList[i], ",", "\"");
 			angAcc.addValue(msg[6].getFloatValue());
+			distAcc.addValue(msg[8].getFloatValue());
 		}
-		float angStd = angAcc.getStandardDeviation();
+		float maxAngle = angAcc.getMaxValue();
+		float maxDist = distAcc.getMaxValue();
 
-		if (angStd > angPrecLimit)
+		if (maxAngle > angErrLimit)
 		{
 			oscMessageList.clear();
 			orientationLocked = false;
 			oscTxRx.sendOscMessage("/orientationLocked", 0);
-			sendMsgToLogWindow("Not enough precision to continue: " + String(angStd));
+			sendMsgToLogWindow("Angular error to high to continue: " + String(maxAngle) + " deg");
+			if (currentMeasurementType == hrir) stopRecording();
+		}
+		else if (maxDist > distErrLimit)
+		{
+			oscMessageList.clear();
+			orientationLocked = false;
+			oscTxRx.sendOscMessage("/orientationLocked", 0);
+			sendMsgToLogWindow("Distance error to high to continue: " + String(maxDist) + " m");
 			if (currentMeasurementType == hrir) stopRecording();
 		}
 		else
 		{
 			// accuracy and precision ok
 			// calculate mean azimuth, elevation and distance
-			StatisticsAccumulator<float> azi, ele, dist;
+			SphericalOperations sphops;
 			for (int i = 0; i < listSize; ++i)
 			{
 				StringArray msg;
 				msg.addTokens(oscMessageList[i], ",", "\"");
-				//azi.addValue(msg[3].getFloatValue()); this should be averaged in cartesian or using circstats
-				//ele.addValue(msg[4].getFloatValue());
-				dist.addValue(msg[5].getFloatValue());
-
+				TransformFrame currentFrame;
+				currentFrame.setSphericalData(msg[2].getIntValue(), msg[3].getFloatValue(), msg[4].getFloatValue(), msg[5].getFloatValue());
+				sphops.addTransformFrame(currentFrame);
 			}
-			meanDist = dist.getAverage();
+
+			TransformFrame meanFrame = sphops.getMeanTransformFrame();
+			//float maxAngle = sphops.getAngularAngle(targetFrame, meanFrame);
+			meanAz = meanFrame.getAz();
+			meanEl = meanFrame.getEl();
+			meanDist = meanFrame.getDist();
 		}
 	}
 }
@@ -437,9 +453,12 @@ String MeasurementLogic::getCurrentName()
 	else if(currentMeasurementType == hrir)
 	{
 		filename += String(m_table.getFromXML(currentMeasurementIndex, "ID").getTrailingIntValue()).paddedLeft('0', 2);
-		filename += "_azi_" + m_table.getFromXML(currentMeasurementIndex, "spkAz");
-		filename += "_ele_" + m_table.getFromXML(currentMeasurementIndex, "spkEl");
-		filename += "_dist_" + String(meanDist,2);
+		filename += "_az_" + m_table.getFromXML(currentMeasurementIndex, "spkAz");
+		filename += "_el_" + m_table.getFromXML(currentMeasurementIndex, "spkEl");
+		filename += "_dist_" + m_table.getFromXML(currentMeasurementIndex, "spkDist");
+		filename += "_maz_" + String(meanAz, 2);
+		filename += "_mel_" + String(meanEl, 2);
+		filename += "_mdist_" + String(meanDist, 2);
 		filename += ".wav";
 	}
 
