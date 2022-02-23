@@ -9,6 +9,14 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 		m_audioSetup.m_shouldBeVisible = true;
 	};
 
+	addAndMakeVisible(outputGainLevelLabel);
+	outputGainLevelLabel.setEditable(false, true, false);
+	outputGainLevelLabel.onTextChange = [this]
+	{
+		float gainDB = outputGainLevelLabel.getText().getFloatValue();
+		m_recorder.setOutputLevel(gainDB);
+	};
+
 	addAndMakeVisible(m_oscTxRx);
 	m_oscTxRx.addChangeListener(this);
 	addAndMakeVisible(m_recordingThumbnail);
@@ -50,7 +58,7 @@ void MainComponent::resized()
 {
 	setupButton.setBounds(10, 10, 140, 60);
 	m_oscTxRx.setBounds(160, 10, 360, 60);
-
+	outputGainLevelLabel.setBounds(530, 10, 140, 60);
 	m_analyzer.setBounds(10, 75, 510, 130);
 	m_recordingThumbnail.setBounds(530, 75, 460, 130);
 
@@ -118,6 +126,7 @@ void MainComponent::loadSettings()
 
 	if (appSettings.getUserSettings()->getBoolValue("loadSettingsFile"))
 	{
+		outputGainLevelLabel.setText(appSettings.getUserSettings()->getValue("outputLevel"), sendNotification);
 		m_logic.loadSubjectFolder(File(appSettings.getUserSettings()->getValue("subjectFolder")));
 
 		// osc
@@ -139,6 +148,7 @@ void MainComponent::saveSettings()
 	}
 
 	// other
+	appSettings.getUserSettings()->setValue("outputLevel", outputGainLevelLabel.getText());
 	appSettings.getUserSettings()->setValue("subjectFolder", m_logic.getSubjectFolder().getFullPathName());
 
 	// osc

@@ -50,6 +50,17 @@ public:
         return sweepLength;
     }
 
+    void setOutputLevel(float gainDB)
+    {
+        outputLevelDB = gainDB;
+        sendMsgToLogWindow("Output level set to: " + String(outputLevelDB) + " dB");
+    }
+
+    float getOutputLevel()
+    {
+        return outputLevelDB;
+    }
+
     void startRecording(const juce::File& file)
     {
         stop();
@@ -116,6 +127,8 @@ public:
         if (activeWriter.load() != nullptr && numInputChannels >= thumbnail.getNumChannels())
         {
             // output
+            AudioSampleBuffer sweepBufferAtt = sweepBuffer;
+            sweepBufferAtt.applyGain(Decibels::decibelsToGain(outputLevelDB));
             int sweepLength = sweepBuffer.getNumSamples();
             if (sweepPosition + numSamples <= sweepLength)
             {
@@ -123,7 +136,7 @@ public:
                 int numberOfSweepSamples = jmin(numSamples, sweepLength - sweepPosition);
                 for (int i = 0; i < numOutputChannels; ++i)
                 {
-                    FloatVectorOperations::copy(outputChannelData[i], sweepBuffer.getReadPointer(0, sweepPosition), numberOfSweepSamples);
+                    FloatVectorOperations::copy(outputChannelData[i], sweepBufferAtt.getReadPointer(0, sweepPosition), numberOfSweepSamples);
                 }
                 sweepPosition += numberOfSweepSamples;
             }
@@ -158,7 +171,6 @@ public:
     }
 
     String m_currentLogMessage;
-
     bool recordingFinished = false;
 
 private:
@@ -172,6 +184,8 @@ private:
     juce::AudioSampleBuffer sweepBuffer;
     float sweepLength = 0.0;
     int sweepPosition = 0;
+
+    float outputLevelDB = 0.f;
 
     juce::CriticalSection writerLock;
     std::atomic<juce::AudioFormatWriter::ThreadedWriter*> activeWriter{ nullptr };

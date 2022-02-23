@@ -31,6 +31,8 @@ private:
 
     TextButton setupButton{ "Audio Setup" };
 
+    Label outputGainLevelLabel;
+
     String logWindowMessage;
     TextEditor logWindow;
 

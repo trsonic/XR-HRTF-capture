@@ -7,29 +7,9 @@ class MeasurementTable : public juce::Component,
 public:
     MeasurementTable()
     {
-        loadData();                                                                  // [1]
-
         addAndMakeVisible(table);                                                  // [1]
-
         table.setColour(juce::ListBox::outlineColourId, juce::Colours::grey);      // [2]
         table.setOutlineThickness(1);
-
-        if (columnList != nullptr)
-        {
-            forEachXmlChildElement(*columnList, columnXml)
-            {
-                table.getHeader().addColumn(columnXml->getStringAttribute("name"), // [2]
-                    columnXml->getIntAttribute("columnId"),
-                    columnXml->getIntAttribute("width"),
-                    50,
-                    400,
-                    juce::TableHeaderComponent::defaultFlags);
-            }
-        }
-
-        table.getHeader().setSortColumnId(1, true);                                // [3]
-        table.setMultipleSelectionEnabled(false);                                   // [4]
-
     }
 
     int getNumRows() override
@@ -108,6 +88,34 @@ public:
         table.setBoundsInset(juce::BorderSize<int>(8));
     }
 
+    void loadData(File tableFile)
+    {
+        if (tableFile.exists())
+        {
+            tutorialData = juce::XmlDocument::parse(tableFile);            // [3]
+
+            dataList = tutorialData->getChildByName("DATA");
+            columnList = tutorialData->getChildByName("HEADERS");          // [4]
+
+            numRows = dataList->getNumChildElements();                      // [5]
+        }
+
+        if (columnList != nullptr)
+        {
+            forEachXmlChildElement(*columnList, columnXml)
+            {
+                table.getHeader().addColumn(columnXml->getStringAttribute("name"), // [2]
+                    columnXml->getIntAttribute("columnId"),
+                    columnXml->getIntAttribute("width"),
+                    50,
+                    400,
+                    juce::TableHeaderComponent::defaultFlags);
+            }
+        }
+        table.getHeader().setSortColumnId(1, true);                                // [3]
+        table.setMultipleSelectionEnabled(false);
+    }
+
     void selectMeasurementRow(const int id)
     {
         if (id == 0)
@@ -139,28 +147,6 @@ private:
     juce::XmlElement* columnList = nullptr;
     juce::XmlElement* dataList = nullptr;
     int numRows = 0;
-
-    void loadData()
-    {
-        auto dir = juce::File::getCurrentWorkingDirectory();
-
-        int numTries = 0;
-
-        while (!dir.getChildFile("Resources").exists() && numTries++ < 15)
-            dir = dir.getParentDirectory();
-
-        auto tableFile = dir.getChildFile("Resources").getChildFile("speaker_angles.xml");
-
-        if (tableFile.exists())
-        {
-            tutorialData = juce::XmlDocument::parse(tableFile);            // [3]
-
-            dataList = tutorialData->getChildByName("DATA");
-            columnList = tutorialData->getChildByName("HEADERS");          // [4]
-
-            numRows = dataList->getNumChildElements();                      // [5]
-        }
-    }
 
     juce::String getAttributeNameForColumnId(const int columnId) const
     {

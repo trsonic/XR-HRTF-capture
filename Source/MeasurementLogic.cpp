@@ -173,7 +173,17 @@ void MeasurementLogic::loadSubjectFolder(File folder)
 		return;
 	}
 
-	// check if folder has speaker angles xml (not implemented yet)
+	// check if folder has speaker angles xml
+	auto tableFile = folder.getChildFile("sweeps/speaker_angles.xml");
+	if (!tableFile.existsAsFile())
+	{
+		sendMsgToLogWindow(" file (sweeps/speaker_angles.xml) does not exist.");
+		return;
+	}
+	else
+	{
+		m_table.loadData(tableFile);
+	}
 	
 	subjectFolder = folder;
 }
@@ -453,12 +463,14 @@ String MeasurementLogic::getCurrentName()
 	else if(currentMeasurementType == hrir)
 	{
 		filename += String(m_table.getFromXML(currentMeasurementIndex, "ID").getTrailingIntValue()).paddedLeft('0', 2);
+		filename += "_target_";
 		filename += "_az_" + m_table.getFromXML(currentMeasurementIndex, "spkAz");
 		filename += "_el_" + m_table.getFromXML(currentMeasurementIndex, "spkEl");
 		filename += "_dist_" + m_table.getFromXML(currentMeasurementIndex, "spkDist");
-		filename += "_maz_" + String(meanAz, 2);
-		filename += "_mel_" + String(meanEl, 2);
-		filename += "_mdist_" + String(meanDist, 2);
+		filename += "_measured_";
+		filename += "_az_" + String(meanAz, 2);
+		filename += "_el_" + String(meanEl, 2);
+		filename += "_dist_" + String(meanDist, 2);
 		filename += ".wav";
 	}
 
