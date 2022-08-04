@@ -147,7 +147,6 @@ void MeasurementLogic::loadSubjectFolder(File folder)
 	hpMeasurementCount = 0;
 	repaint();
 
-
 	sendMsgToLogWindow("Loading subject folder: " + folder.getFullPathName());
 
 	// check if the subject folder exists
@@ -159,7 +158,11 @@ void MeasurementLogic::loadSubjectFolder(File folder)
 
 	// check if the LS sweep file exists
 	lsSweepFile = folder.getChildFile("sweeps/LS_sweep.wav");
-	if (!lsSweepFile.existsAsFile())
+	if (lsSweepFile.existsAsFile())
+	{
+		sendMsgToLogWindow("HRIR Measurement Sweep file found: " + lsSweepFile.getFullPathName());
+	}
+	else
 	{
 		sendMsgToLogWindow("The sweep wav file (sweeps/LS_sweep.wav) does not exist.");
 		return;
@@ -167,7 +170,12 @@ void MeasurementLogic::loadSubjectFolder(File folder)
 
 	// check if the HP sweep file exists
 	hpSweepFile = folder.getChildFile("sweeps/HP_sweep.wav");
-	if (!lsSweepFile.existsAsFile())
+	if (hpSweepFile.existsAsFile())
+	{
+		sendMsgToLogWindow("HP Compensation Measurement Sweep file found: " + hpSweepFile.getFullPathName());
+
+	}
+	else
 	{
 		sendMsgToLogWindow("The sweep wav file (sweeps/HP_sweep.wav) does not exist.");
 		return;
@@ -175,14 +183,15 @@ void MeasurementLogic::loadSubjectFolder(File folder)
 
 	// check if folder has speaker angles xml
 	auto tableFile = folder.getChildFile("sweeps/speaker_angles.xml");
-	if (!tableFile.existsAsFile())
+	if (tableFile.existsAsFile())
 	{
-		sendMsgToLogWindow(" file (sweeps/speaker_angles.xml) does not exist.");
-		return;
+		sendMsgToLogWindow("Configuration file found: " + tableFile.getFullPathName());
+		m_table.loadData(tableFile);
 	}
 	else
 	{
-		m_table.loadData(tableFile);
+		sendMsgToLogWindow(" file (sweeps/speaker_angles.xml) does not exist.");
+		return;
 	}
 	
 	subjectFolder = folder;

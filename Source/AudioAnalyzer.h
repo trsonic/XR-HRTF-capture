@@ -67,11 +67,19 @@ public:
 		g.drawText("Sample rate: " + String(currentSampleRate), 5, 3, 140, 14, Justification::centredLeft);
 		g.drawText("Buffer size: " + String(currentBlockSize), 5, 17, 140, 14, Justification::centredLeft);
 		g.drawText("FFT size: " + String(currentFFTSize), 5, 31, 140, 14, Justification::centredLeft);
-		g.setColour(Colours::green);
-		g.drawText("L: " + Decibels::toString(Decibels::gainToDecibels(peakValue[0])), 5, 45, 140, 14, Justification::centredLeft);
-		g.setColour(Colours::red);
-		g.drawText("R: " + Decibels::toString(Decibels::gainToDecibels(peakValue[1])), 5, 59, 140, 14, Justification::centredLeft);
 
+		// peak level meters
+		float leftPeakdB = Decibels::gainToDecibels(peakValue[0]);
+		float rightPeakdB = Decibels::gainToDecibels(peakValue[1]);
+
+		g.setColour(Colours::green);
+		g.fillRect(5, getHeight() - 35, (int)(120.f + leftPeakdB)*2, 15);
+		g.setColour(Colours::red);
+		g.fillRect(5, getHeight() - 20, (int)(120.f + rightPeakdB)*2, 15);
+		g.setColour(Colours::white);
+		g.drawText("L: " + Decibels::toString(leftPeakdB), 5, getHeight() - 35, 100, 15, Justification::centredLeft);
+		g.drawText("R: " + Decibels::toString(rightPeakdB), 5, getHeight() - 20, 100, 15, Justification::centredLeft);
+		
 	};
 
 	void resized() override

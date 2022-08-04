@@ -11,6 +11,8 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
 
 	addAndMakeVisible(outputGainLevelLabel);
 	outputGainLevelLabel.setEditable(false, true, false);
+	outputGainLevelLabel.setJustificationType(Justification::centred);
+	outputGainLevelLabel.setColour(Label::outlineColourId, Colours::black);
 	outputGainLevelLabel.onTextChange = [this]
 	{
 		float gainDB = outputGainLevelLabel.getText().getFloatValue();
@@ -30,6 +32,11 @@ MainComponent::MainComponent() : m_audioSetup(audioDeviceManager)
     setSize(1000, 700);
     loadSettings();
 	m_recorder.addChangeListener(this);
+
+	//// meter
+	//audioDeviceManager.getInputLevelGetter();
+	////AudioDeviceManager::LevelMeter meter;
+	////meter.
 
 	// log window
 	logWindow.setMultiLine(true);
@@ -51,6 +58,8 @@ void MainComponent::paint (juce::Graphics& g)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
 	g.setColour(getLookAndFeel().findColour(Label::textColourId));
+	g.setFont(14.0f);
+	g.drawText("Output Level", 530, 10, 100, 25, Justification::centredLeft, true);
 
 }
 
@@ -58,7 +67,7 @@ void MainComponent::resized()
 {
 	setupButton.setBounds(10, 10, 140, 60);
 	m_oscTxRx.setBounds(160, 10, 360, 60);
-	outputGainLevelLabel.setBounds(530, 10, 140, 60);
+	outputGainLevelLabel.setBounds(530, 35, 100, 25);
 	m_analyzer.setBounds(10, 75, 510, 130);
 	m_recordingThumbnail.setBounds(530, 75, 460, 130);
 
@@ -133,6 +142,10 @@ void MainComponent::loadSettings()
 		m_oscTxRx.clientTxIpLabel.setText(appSettings.getUserSettings()->getValue("clientTxIp"), dontSendNotification);
 		m_oscTxRx.clientTxPortLabel.setText(appSettings.getUserSettings()->getValue("clientTxPort"), dontSendNotification);
 		m_oscTxRx.clientRxPortLabel.setText(appSettings.getUserSettings()->getValue("clientRxPort"), dontSendNotification);
+	}
+	else
+	{
+		outputGainLevelLabel.setText("-20", sendNotification);
 	}
 }
 
