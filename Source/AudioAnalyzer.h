@@ -3,6 +3,7 @@
 
 class AudioAnalyzer : public Component
 					, public Timer
+					, public MouseListener
 {
 public:
 	AudioAnalyzer() : forwardFFT(fftOrder)
@@ -44,9 +45,9 @@ public:
 		g.fillAll(Colours::black);
 
 		int startX = 85;
-		int startY = 0;
-		float scaleX = 1.6;
-		float scaleY = 1.25;
+		int startY = 5;
+		float scaleX = 1.6f;
+		float scaleY = 0.75f;
 		int startBin = 0;
 
 		for (int i = 0; i < fftSize; ++i)
@@ -69,16 +70,27 @@ public:
 		g.drawText("FFT size: " + String(currentFFTSize), 5, 31, 140, 14, Justification::centredLeft);
 
 		// peak level meters
-		float leftPeakdB = Decibels::gainToDecibels(peakValue[0]);
-		float rightPeakdB = Decibels::gainToDecibels(peakValue[1]);
+		float alpha = 0.95f;
+		smoothedPeakValue[0] = smoothedPeakValue[0] * alpha + peakValue[0] * (1 - alpha);
+		smoothedPeakValue[1] = smoothedPeakValue[1] * alpha + peakValue[1] * (1 - alpha);
 
+		float leftPeakdB = Decibels::gainToDecibels(smoothedPeakValue[0]);
+		float rightPeakdB = Decibels::gainToDecibels(smoothedPeakValue[1]);
+		float leftPeakMaxdB = Decibels::gainToDecibels(peakValueMax[0]);
+		float rightPeakMaxdB = Decibels::gainToDecibels(peakValueMax[1]);
+
+		int scale = 4;
+		float range = 110.f;
+		int h = 10;
 		g.setColour(Colours::green);
-		g.fillRect(5, getHeight() - 35, (int)(120.f + leftPeakdB)*2, 15);
+		g.fillRect(5, getHeight() - 35, (int)(range + leftPeakdB) * scale, h);
+		g.fillRect(4 + (int)(range + leftPeakMaxdB) * scale, getHeight() - 35, 2, h);
 		g.setColour(Colours::red);
-		g.fillRect(5, getHeight() - 20, (int)(120.f + rightPeakdB)*2, 15);
+		g.fillRect(5, getHeight() - 20, (int)(range + rightPeakdB) * scale, h);
+		g.fillRect(4 + (int)(range + rightPeakMaxdB) * scale, getHeight() - 20, 2, h);
 		g.setColour(Colours::white);
-		g.drawText("L: " + Decibels::toString(leftPeakdB), 5, getHeight() - 35, 100, 15, Justification::centredLeft);
-		g.drawText("R: " + Decibels::toString(rightPeakdB), 5, getHeight() - 20, 100, 15, Justification::centredLeft);
+		g.drawText("L max: " + Decibels::toString(leftPeakMaxdB), getWidth() - 105, getHeight() - 35, 100, h, Justification::centredLeft);
+		g.drawText("R max: " + Decibels::toString(rightPeakMaxdB), getWidth() - 105, getHeight() - 20, 100, h, Justification::centredLeft);
 		
 	};
 
@@ -91,12 +103,12 @@ public:
 	{
 		if (nextFFTBlockReady)
 		{
-			window.multiplyWithWindowingTable(fftData[0], fftSize);
-			window.multiplyWithWindowingTable(fftData[1], fftSize);
-			forwardFFT.performFrequencyOnlyForwardTransform(fftData[0]);
-			forwardFFT.performFrequencyOnlyForwardTransform(fftData[1]);
-			FloatVectorOperations::copy(fftDataCopy[0], fftData[0], fftSize / 2);
-			FloatVectorOperations::copy(fftDataCopy[1], fftData[1], fftSize / 2);
+			for (int i = 0; i < 2; ++i)
+			{
+				window.multiplyWithWindowingTable(fftData[i], fftSize);
+				forwardFFT.performFrequencyOnlyForwardTransform(fftData[i]);
+				FloatVectorOperations::copy(fftDataCopy[i], fftData[i], fftSize / 2);
+			}
 			repaint();
 			nextFFTBlockReady = false;
 		}
@@ -107,6 +119,12 @@ public:
 		fftOrder = 9,
 		fftSize = 1 << fftOrder
 	};
+
+	void mouseDown(const MouseEvent& event) override
+	{
+		peakValueMax[0] = 0.f;
+		peakValueMax[1] = 0.f;
+	}
 
 private:
 
@@ -119,12 +137,15 @@ private:
 			if (!nextFFTBlockReady && channel == 1)
 			{
 				zeromem(fftData, sizeof(fftData));
-				memcpy(fftData[0], fifo[0], sizeof(fifo[0]));
-				memcpy(fftData[1], fifo[1], sizeof(fifo[1]));
-				FloatVectorOperations::abs(fifo[0], fifo[0], sizeof(fifo[0]));
-				FloatVectorOperations::abs(fifo[1], fifo[1], sizeof(fifo[1]));
-				peakValue[0] = FloatVectorOperations::findMaximum(fifo[0], 1);
-				peakValue[1] = FloatVectorOperations::findMaximum(fifo[1], 1);
+
+				for (int i = 0; i < 2; ++i)
+				{
+					memcpy(fftData[i], fifo[i], sizeof(fifo[i]));
+					FloatVectorOperations::abs(fifo[i], fifo[i], sizeof(fifo[i]));
+					peakValue[i] = FloatVectorOperations::findMaximum(fifo[i], 1);
+					if (peakValue[i] > peakValueMax[i]) peakValueMax[i] = peakValue[i];
+				}
+				
 				nextFFTBlockReady = true;
 			}
 			fifoIndex = 0;
@@ -137,11 +158,12 @@ private:
 	juce::dsp::WindowingFunction<float> window;
 
 	float fifo[2][fftSize];
-	float peakValue[2];
+	float peakValue[2], smoothedPeakValue[2], peakValueMax[2];
 	float fftData[2][2 * fftSize];
 	float fftDataCopy[2][2 * fftSize];
 	int fifoIndex = 0;
 	bool nextFFTBlockReady = false;
 
-	int currentSampleRate = 0, currentBlockSize = 0, currentFFTSize = 0;
+	double currentSampleRate = 0.0;
+	int currentBlockSize = 0, currentFFTSize = 0;
 };

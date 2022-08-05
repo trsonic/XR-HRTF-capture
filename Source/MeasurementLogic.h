@@ -170,6 +170,6 @@ private:
 
 	MeasurementTable m_table;
 	TextEditor m_lastMessage, m_logHeaderTE;
-	String m_logHeader = "salte_time,osc_pattern,ml_time,azimuth,elevation,distance,hdSpkAngDev,spkHdAngDev,distDev\n";
+	String m_logHeader = "local_time,osc_pattern,hmd_time,azimuth,elevation,distance,hdSpkAngDev,spkHdAngDev,distDev\n";
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MeasurementLogic)
 };

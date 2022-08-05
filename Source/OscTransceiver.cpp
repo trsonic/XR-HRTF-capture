@@ -42,8 +42,6 @@ OscTransceiver::OscTransceiver()
 			}
 			sendMsgToLogWindow("Local IP: " + localIpAddress);
 			sendOscMessage("/rendererIp", (String)localIpAddress);
-			//sendOscMessage("/rendererIp", (String)"192.168.1.107");
-
 		}
 		else
 		{
@@ -78,22 +76,17 @@ void OscTransceiver::paint(juce::Graphics& g)
 
 	g.setColour(getLookAndFeel().findColour(Label::textColourId));
 	g.setFont(14.0f);
-	int x = 440;
-	int y = 135;
-	g.drawText("IP", 310 + 140 - x, 210 - 75 - y, 50, 25, Justification::centredLeft, true);
-	g.drawText("Send to", 435 + 140 - x, 210 - 75 - y, 60, 25, Justification::centredLeft, true);
-	g.drawText("Receive at", 490 + 140 - x, 210 - 75 - y, 60, 25, Justification::centredLeft, true);
-	g.drawText("Client", 260 + 140 - x, 235 - 75 - y, 50, 25, Justification::centredLeft, true);
+	g.drawText("HMD IP", 0, 50, 25, Justification::centredLeft, true);
+	g.drawText("Send to", 135, 0, 60, 25, Justification::centredLeft, true);
+	g.drawText("Receive at", 190, 0, 60, 25, Justification::centredLeft, true);
 }
 
 void OscTransceiver::resized()
 {
-	int x = 440;
-	int y = 135;
-	connectOscButton.setBounds(560 + 140 - x, 220 - 75 - y, 80, 40);
-	clientTxIpLabel.setBounds(310 + 140 - x, 235 - 75 - y, 120, 25);
-	clientTxPortLabel.setBounds(435 + 140 - x, 235 - 75 - y, 55, 25);
-	clientRxPortLabel.setBounds(495 + 140 - x, 235 - 75 - y, 55, 25);
+	connectOscButton.setBounds(260, 10, 80, 40);
+	clientTxIpLabel.setBounds(10, 25, 120, 25);
+	clientTxPortLabel.setBounds(135, 25, 55, 25);
+	clientRxPortLabel.setBounds(195, 25, 55, 25);
 }
 
 void OscTransceiver::connectTxRx(String ipToSendTo, int portToSendTo, int portToReceiveAt)
